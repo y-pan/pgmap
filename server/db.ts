@@ -1,36 +1,66 @@
 import { Pool, Client, QueryResult, QueryResultRow } from 'pg';
-// import secret from "./secret/secret.json"
 const secret = require("./secret/secret.json")
 const pool = new Pool(secret)
+const isDebug = true;
 
-export async function fetchTables(schema='public') {
-  const {rowCount, rows}: QueryResult<QueryResultRow> = await pool.query(`
-  select table_name 
-  from information_schema.tables 
-  where table_schema = '${schema}' 
-  and table_type = 'BASE TABLE'
-  `);
+interface FetchResult {
+  items: string[] | QueryResultRow[] | any[],
+  count: number
+}
+
+export async function fetchSchemas(): Promise<FetchResult> {
+  const queryStr = `
+  SELECT schema_name
+  FROM information_schema.schemata
+  `;
+
+  logQuery(queryStr)
+
+  const {rows, rowCount}: QueryResult<QueryResultRow> = await pool.query(queryStr);
   return {
-    count: rowCount, 
-    items: rows.map(row => row['table_name'])
+    items: rows,
+    count: rowCount
   }
 }
 
-export async function fetchColumns(schema='public', table) {
-  const {rowCount, rows}: QueryResult<QueryResultRow> = await pool.query(`
-  select column_name, ordinal_position
-  from information_schema.columns 
-  where table_schema = '${schema}' 
-  and table_name = '${table}'
-  `);
+export async function fetchTablesBySchema(schema: string): Promise<FetchResult> {
+  const queryStr = `
+  SELECT table_name 
+  FROM information_schema.tables 
+  WHERE table_schema = '${schema}' 
+  AND table_type = 'BASE TABLE'
+  `;
+
+  logQuery(queryStr)
+
+  const {rowCount, rows}: QueryResult<QueryResultRow> = await pool.query(queryStr);
   return {
     count: rowCount, 
-    items: rows.sort(colDef => colDef.ordinal_position).map(colDef => colDef['column_name'])
+    items: rows.map(row => row.table_name)
+  }
+}
+
+export async function fetchColumnsByTable(schema: string, table: string): Promise<FetchResult> {
+  const queryStr = `
+  SELECT column_name, ordinal_position
+  FROM information_schema.columns 
+  WHERE table_schema = '${schema}' 
+  AND table_name = '${table}'
+  `;
+
+  logQuery(queryStr);
+  
+  const {rowCount, rows}: QueryResult<QueryResultRow> = await pool.query(queryStr);
+  return {
+    count: rowCount, 
+    items: rows.sort(colDef => colDef.ordinal_position).map(colDef => colDef.column_name)
   };
 }
 
-export async function fetchContraints(schema='public', table) {
-  const {rowCount, rows}: QueryResult<QueryResultRow> = await pool.query(`
+export async function fetchContraints(schema: string, table: string): Promise<FetchResult> {
+  const whereClause = getWhereForFetchContraints(schema, table);
+
+  const queryStr = `
   SELECT
     rel.relname AS table_name, 
     -- rel.oid AS table_id, 
@@ -48,15 +78,36 @@ export async function fetchContraints(schema='public', table) {
                 ON rel.oid = con.conrelid
     INNER JOIN pg_catalog.pg_namespace nsp
                   ON nsp.oid = connamespace
-  WHERE 
-    nsp.nspname = '${schema}'
-    ${table ? `AND rel.relname = '${table}'` : ''}
-    AND con.contype IN ('f', 'p', 'u')
+  ${whereClause}
   ORDER BY 
     rel.relname asc, con.contype desc
-  `);
+  `;
+
+  logQuery(queryStr)
+
+  const {rowCount, rows}: QueryResult<QueryResultRow> = await pool.query(queryStr);
   return {
     count: rowCount,
     items: rows
   };
+}
+
+function getWhereForFetchContraints(schema: string, table: string): string {
+  if (!schema && !table) return ''
+  let whereClause = ''
+  if (schema) {
+    whereClause +=  ` nsp.nspname = '${schema}' `;
+  }
+  if (table) {
+    if (whereClause) {
+      whereClause += " AND ";
+    }
+    whereClause += ` rel.relname = '${table}' `;
+  }
+  // AND con.contype IN ('f', 'p', 'u')
+  return whereClause ? ` WHERE ${whereClause}` : '';
+}
+
+function logQuery(query) {
+  isDebug && console.log(`[query]:\n${query}`);
 }

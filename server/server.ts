@@ -1,12 +1,19 @@
 import express = require('express');
+const path = require('path');
 import bodyParser from "body-parser";
-import {fetchSchemas, fetchTablesBySchema, fetchColumnsByTable, fetchContraints} from "./db";
+import {fetchSchemas, fetchTables, fetchColumnsByTable, fetchContraints} from "./db";
+const cors = require('cors')
 
 const app: express.Application = express();
 
 // middlewares
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
+app.use('/', express.static(path.join(__dirname, 'public')))
+app.options('*', cors({
+    origin: "http://localhost:3000" // frontend dev
+}))
 
 // routes
 // list schemas
@@ -15,30 +22,14 @@ app.get('/api/schemas', async (req, res) => {
     res.json(schemas)
 });
 
-// list tables of a schema
-app.get('/api/schemas/:schema', async (req, res) =>  {
-    const schema = req.params.schema || 'public'
-    const tables = await fetchTablesBySchema(schema)
-    res.json(tables);
+// list tables, optionally by schema
+app.get('/api/tables', async (req, res) => {
+    const schema = req.query.schema as string
+    const tables = await fetchTables(schema)
+    res.json(tables)
 });
 
-// list columns of a table
-app.get('/api/schemas/:schema/:table', async (req, res) => {
-    const schema = req.params.schema || 'public'
-    const table = req.params.table
-    const cols = await fetchColumnsByTable(schema, table)
-    res.json(cols);
-});
-
-// list constraints of a table
-app.get('/api/schemas/:schema/:table/constraints', async (req, res) => {
-    const schema = req.params.schema
-    const table = req.params.table
-    const results = await fetchContraints(schema, table)
-    res.json(results);
-});
-
-// list all constraints. Not useful in practical
+// list constraints, optionally by schema/table
 app.get('/api/constraints', async (req, res) => {
     const schema = req.query.schema as string;
     const table = req.query.table as string;
@@ -51,6 +42,6 @@ app.get("*", async (req, res) => {
 })
 
 // app run
-app.listen(3000, async function () {
+app.listen(8000, async function () {
     console.log('App is listening on port 3000!');
 });

@@ -23,12 +23,21 @@ export async function fetchSchemas(): Promise<FetchResult> {
   }
 }
 
-export async function fetchTablesBySchema(schema: string): Promise<FetchResult> {
+export async function fetchTables(schema?: string): Promise<FetchResult> {
+  let whereClause = ''
+  if (schema) {
+    whereClause = `
+    WHERE table_schema = '${schema}' AND table_type = 'BASE TABLE'
+    `
+  } else {
+    whereClause = `
+    WHERE table_type = 'BASE TABLE'
+    `
+  }
   const queryStr = `
   SELECT table_name 
   FROM information_schema.tables 
-  WHERE table_schema = '${schema}' 
-  AND table_type = 'BASE TABLE'
+  ${whereClause}
   `;
 
   logQuery(queryStr)

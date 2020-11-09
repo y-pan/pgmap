@@ -1,18 +1,26 @@
-import React ,  {useEffect} from 'react'
-import { fetchConstraints, fetchSchemas, fetchTables } from '../../api/Api';
-import { ConstraintResponse, SchemaResponse, TableResponse } from '../../api/type';
+import React ,  {useEffect} from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { getSchemasSaga } from '../../store/actions/schemas';
+import { LoadingStatus } from '../../store/reducers/types';
+import { getSchemas, getSchemasStatus } from '../../store/selectors/schemas';
 
 interface Props {
 }
 const DbMap: React.FC<Props> = (props) => {
+    const dispatch = useDispatch();
+    const schemas = useSelector(getSchemas)
+    const schemasStatus = useSelector(getSchemasStatus);
+
+    // load schemas
     useEffect(() => {
-        fetchSchemas().then((res: SchemaResponse) => console.log(`All schemas`, res));
-        fetchTables().then((res: TableResponse) => console.log(`All tables in all schemas:`, res));
-        fetchTables('public').then((res: TableResponse) => console.log(`All tables of schema 'public':`, res));
-        fetchConstraints().then((res: ConstraintResponse) => console.log(`All constraints in all schema and tables`, res));
-        fetchConstraints('public', 'user').then((res: ConstraintResponse) => console.log(`All constraints pulic.user`, res));
-        fetchConstraints('public', 'addresss').then((res: ConstraintResponse) => console.log(`All constraints pulic.address`, res));
-    })
+        if (schemasStatus === LoadingStatus.INITIAL) {
+            dispatch(getSchemasSaga());           
+        }
+    }, [schemasStatus])
+
+    // load tables
+    
+    // load constraints
    return  <div>This is DbMap</div>
 }
 

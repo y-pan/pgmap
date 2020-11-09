@@ -1,5 +1,5 @@
 import { ConstraintItem } from "../../api/type";
-import { Action } from "../actions/ActionTypes";
+import { Action } from "../actions/actionTypes";
 import { getConstraintsActionFailed, getConstraintsActionRequested, getConstraintsActionSucceeded } from "../actions/constraints";
 import { LoadingStatus } from "./types";
 
@@ -30,7 +30,8 @@ const constraintsReducer = (state = initialState, action: Action<any>): Constrai
     case getConstraintsActionSucceeded:
       return {
         ...state,
-        constraints: action.payload
+        constraints: action.payload,
+        constraintsStatus: LoadingStatus.SUCCEEDED
       }
     default: 
       return state;

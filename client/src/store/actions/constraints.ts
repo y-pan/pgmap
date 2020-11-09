@@ -1,5 +1,5 @@
 import { ConstraintItem } from "../../api/type";
-import { actionTypesOf } from "./ActionTypes";
+import { actionTypesOf } from "./actionTypes";
 
 const NAMESPACE = 'Constraints';
 

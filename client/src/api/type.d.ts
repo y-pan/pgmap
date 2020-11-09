@@ -6,9 +6,7 @@ export enum ConstraintTypes {
 }
 
 // items
-export interface SchemaItem {
-  schema_name: string
-}
+export type SchemaItem = string;
 export type TableItem = string;
 export interface ConstraintItem {
   table_name: string;

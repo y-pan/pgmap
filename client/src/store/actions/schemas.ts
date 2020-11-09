@@ -1,5 +1,5 @@
 import { SchemaItem } from "../../api/type";
-import { Action, actionTypesOf } from "./ActionTypes";
+import { Action, actionTypesOf } from "./actionTypes";
 
 const NAMESPACE = 'Schemas';
 

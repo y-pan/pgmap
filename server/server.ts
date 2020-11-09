@@ -18,14 +18,14 @@ app.options('*', cors({
 // routes
 // list schemas
 app.get('/api/schemas', async (req, res) => {
-    const schemas = await fetchSchemas()
+    const schemas = await fetchSchemas() // schema names only
     res.json(schemas)
 });
 
 // list tables, optionally by schema
 app.get('/api/tables', async (req, res) => {
     const schema = req.query.schema as string
-    const tables = await fetchTables(schema)
+    const tables = await fetchTables(schema) // table names only
     res.json(tables)
 });
 

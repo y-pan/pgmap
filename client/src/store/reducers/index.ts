@@ -1,7 +1,7 @@
 import {combineReducers} from 'redux';
-import schemas from './reducers/schemas';
-import tables from './reducers/tables';
-import constraints from './reducers/constraints';
+import schemas from './schemas';
+import tables from './tables';
+import constraints from './constraints';
 
 const rootReducer = combineReducers({
   schemas,

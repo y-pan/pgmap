@@ -1,5 +1,5 @@
 import {SchemaItem} from '../../api/type';
-import { Action } from '../actions/ActionTypes';
+import { Action } from '../actions/actionTypes';
 import { getSchemasActionFailed, getSchemasActionRequested, getSchemasActionSucceeded } from '../actions/schemas';
 import { LoadingStatus } from './types';
 

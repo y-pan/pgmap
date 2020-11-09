@@ -36,7 +36,7 @@ const DbMap: React.FC<Props> = (props) => {
     // load constraints
     const constraints = useSelector(getConstraints);
     const consraintsStauts = useSelector(getConstraintsStatus);
-    console.log("### constr", constraints, getConstraintsStatus);
+    console.log("### constr", constraints, consraintsStauts);
     useEffect(() => {
         if (consraintsStauts === LoadingStatus.INITIAL) {
             dispatch(getConstraintsSaga());

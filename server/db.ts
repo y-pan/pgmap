@@ -18,7 +18,7 @@ export async function fetchSchemas(): Promise<FetchResult> {
 
   const {rows, rowCount}: QueryResult<QueryResultRow> = await pool.query(queryStr);
   return {
-    items: rows,
+    items: rows.map(schema => schema.schema_name),
     count: rowCount
   }
 }

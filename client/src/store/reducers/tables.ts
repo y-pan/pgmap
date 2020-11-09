@@ -1,6 +1,6 @@
 import {TableItem} from '../../api/type';
 import {Action} from '../actions/actionTypes';
-import { getTablesActionFailed, getTablesActionRequested, getTablesActionSucceeded, getTablesRequested } from '../actions/tables';
+import { getTablesActionFailed, getTablesActionRequested, getTablesActionSucceeded } from '../actions/tables';
 import { LoadingStatus } from './types';
 
 export interface TablesState {

@@ -21,7 +21,7 @@ const DbMap: React.FC<Props> = (props) => {
         if (schemasStatus === LoadingStatus.INITIAL) {
             dispatch(getSchemasSaga());           
         }
-    }, [schemasStatus]);
+    }, [schemasStatus, dispatch]);
 
     // load tables
     const tables = useSelector(getTables);
@@ -31,7 +31,7 @@ const DbMap: React.FC<Props> = (props) => {
         if (tablesStatus === LoadingStatus.INITIAL) {
             dispatch(getTablesSaga());
         }
-    }, [tablesStatus]);
+    }, [tablesStatus, dispatch]);
 
     // load constraints
     const constraints = useSelector(getConstraints);
@@ -41,7 +41,7 @@ const DbMap: React.FC<Props> = (props) => {
         if (consraintsStauts === LoadingStatus.INITIAL) {
             dispatch(getConstraintsSaga());
         }
-    }, [consraintsStauts]);
+    }, [consraintsStauts, dispatch]);
 
     return  <div>This is DbMap</div>
 }

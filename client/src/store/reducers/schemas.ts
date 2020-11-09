@@ -4,17 +4,17 @@ import { getSchemasActionFailed, getSchemasActionRequested, getSchemasActionSucc
 import { LoadingStatus } from './types';
 
 
-export interface SchemaState {
+export interface SchemasState {
   schemas?: SchemaItem[];
   schemasStatus?: LoadingStatus;
 }
 
-const initialState: SchemaState = {
-  schemas: [],
+const initialState: SchemasState = {
+  schemas: undefined,
   schemasStatus: LoadingStatus.INITIAL
 }
 
-const schemaReducer = (state = initialState, action: Action<any>): SchemaState  => {
+const schemasReducer = (state = initialState, action: Action<any>): SchemasState  => {
   switch(action.type) {
     case getSchemasActionRequested:
       return {
@@ -39,4 +39,4 @@ const schemaReducer = (state = initialState, action: Action<any>): SchemaState  
   }
 }
 
-export default schemaReducer;
+export default schemasReducer;

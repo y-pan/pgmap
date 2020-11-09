@@ -5,7 +5,6 @@ import { SchemaResponse } from "../../api/type";
 
 function* getSchemasSaga() {
   try {
-    console.log("saga getSchemasSaga")
     yield put(getSchemasRequested());
     const schemasReponse: SchemaResponse = yield call(fetchSchemas); // all schemas
     yield put(getSchemasSucceeded(schemasReponse.items));

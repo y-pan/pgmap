@@ -10,12 +10,12 @@ export const [
   getSchemasActionFailed
 ] = actionTypesOf(NAMESPACE, 'getSchemas');
 
-export const getSchemasSaga = (): Action<any> => ({
+export const getSchemasSaga = (): Action<void> => ({
   type: getSchemasActionSaga,
 });
 
-export const getSchemasRequested = (): Action<any> => ({type: getSchemasActionRequested});
-export const getSchemasFailed = (): Action<any> => ({type: getSchemasActionFailed});
+export const getSchemasRequested = (): Action<void> => ({type: getSchemasActionRequested});
+export const getSchemasFailed = (): Action<void> => ({type: getSchemasActionFailed});
 export const getSchemasSucceeded = (payload: SchemaItem[]): Action<SchemaItem[]> => ({
   type: getSchemasActionSucceeded, payload
 });

@@ -1,8 +1,10 @@
 import React ,  {useEffect} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { getConstraintsSaga } from '../../store/actions/constraints';
 import { getSchemasSaga } from '../../store/actions/schemas';
 import { getTablesSaga } from '../../store/actions/tables';
 import { LoadingStatus } from '../../store/reducers/types';
+import { getConstraints, getConstraintsStatus } from '../../store/selectors/constaints';
 import { getSchemas, getSchemasStatus } from '../../store/selectors/schemas';
 import { getTables, getTablesStatus } from '../../store/selectors/tables';
 
@@ -30,8 +32,18 @@ const DbMap: React.FC<Props> = (props) => {
             dispatch(getTablesSaga());
         }
     }, [tablesStatus]);
+
     // load constraints
-   return  <div>This is DbMap</div>
+    const constraints = useSelector(getConstraints);
+    const consraintsStauts = useSelector(getConstraintsStatus);
+    console.log("### constr", constraints, getConstraintsStatus);
+    useEffect(() => {
+        if (consraintsStauts === LoadingStatus.INITIAL) {
+            dispatch(getConstraintsSaga());
+        }
+    }, [consraintsStauts]);
+
+    return  <div>This is DbMap</div>
 }
 
 export default DbMap;

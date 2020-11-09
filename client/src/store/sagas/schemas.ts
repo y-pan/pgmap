@@ -10,7 +10,7 @@ function* getSchemasSaga() {
     yield put(getSchemasSucceeded(schemasReponse.items));
   } catch(e) {
     console.error(e);
-    yield put(getSchemasFailed())
+    yield put(getSchemasFailed());
   }
 }
 

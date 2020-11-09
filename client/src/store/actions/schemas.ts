@@ -15,8 +15,7 @@ export const getSchemasSaga = (): Action<void> => ({
 });
 
 export const getSchemasRequested = (): Action<void> => ({type: getSchemasActionRequested});
-export const getSchemasFailed = (): Action<void> => ({type: getSchemasActionFailed});
 export const getSchemasSucceeded = (payload: SchemaItem[]): Action<SchemaItem[]> => ({
   type: getSchemasActionSucceeded, payload
 });
-
+export const getSchemasFailed = (): Action<void> => ({type: getSchemasActionFailed});

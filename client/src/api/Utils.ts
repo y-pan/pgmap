@@ -32,3 +32,16 @@ export function groupBy<T>(
 
   return map;
 }
+
+export function toDistinctMap<T, V>(
+  array: T[],
+  keyExtrator: (item: T) => string,
+  valueExtractor: (item: T) => any
+): SMap<V> {
+  const map: SMap<V> = {};
+  for (let item of array) {
+    const key = keyExtrator(item);
+    map[key] = valueExtractor(item);
+  }
+  return map;
+}

@@ -48,8 +48,27 @@ svg.schema-svg-map {
   margin: 10px;
 }
 
-rect.table {
-  stroke: lightskyblue;
+rect {
   stroke-width: 1px;
+  fill: rgba(255, 255, 255, 0.1);
+  stroke: rgb(11, 11, 11);
+}
+
+rect.table {
   fill: rgba(173, 178, 249, 0.5);
+  stroke: lightskyblue;
+}
+rect.table-name {
+  fill: rgba(109, 133, 240, 0.5);
+  stroke: rgba(16, 17, 17, 0.781);
+}
+
+text {
+  font-size: 15px;
+  fill: black;
+  text-anchor: middle;
+}
+
+text.table-name {
+  font-weight: bold;
 }

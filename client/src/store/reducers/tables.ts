@@ -4,7 +4,7 @@ import { getTablesActionFailed, getTablesActionRequested, getTablesActionSucceed
 import { LoadingStatus } from './types';
 
 export interface TablesState {
-  tables?: TableItem[];
+  tables?: TableItem[]; // All tables of 1 schema, at any monent.
   tablesStatus?: LoadingStatus;
 }
 

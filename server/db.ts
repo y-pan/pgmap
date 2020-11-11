@@ -35,7 +35,9 @@ export async function fetchTables(schema?: string): Promise<FetchResult> {
     `
   }
   const queryStr = `
-  SELECT table_name 
+  SELECT 
+  table_schema,
+  table_name 
   FROM information_schema.tables 
   ${whereClause}
   `;
@@ -45,16 +47,21 @@ export async function fetchTables(schema?: string): Promise<FetchResult> {
   const {rowCount, rows}: QueryResult<QueryResultRow> = await pool.query(queryStr);
   return {
     count: rowCount, 
-    items: rows.map(row => row.table_name)
+    items: rows //.map(row => row.table_name)
   }
 }
 
 export async function fetchColumnsByTable(schema: string, table: string): Promise<FetchResult> {
+  const whereClause = getWhereForQueryColumns(schema, table);
+
   const queryStr = `
-  SELECT column_name, ordinal_position
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
   FROM information_schema.columns 
-  WHERE table_schema = '${schema}' 
-  AND table_name = '${table}'
+  ${whereClause}
   `;
 
   logQuery(queryStr);
@@ -62,7 +69,7 @@ export async function fetchColumnsByTable(schema: string, table: string): Promis
   const {rowCount, rows}: QueryResult<QueryResultRow> = await pool.query(queryStr);
   return {
     count: rowCount, 
-    items: rows.sort(colDef => colDef.ordinal_position).map(colDef => colDef.column_name)
+    items: rows // rows.sort(colDef => colDef.ordinal_position).map(colDef => colDef.column_name)
   };
 }
 
@@ -101,11 +108,26 @@ export async function fetchContraints(schema: string, table: string): Promise<Fe
   };
 }
 
-function getWhereForFetchContraints(schema: string, table: string): string {
-  if (!schema && !table) return ''
-  let whereClause = ''
+function getWhereForQueryColumns(schema, table): string {
+  if (!schema && !table) return '';
+  let whereClause = '';
   if (schema) {
-    whereClause +=  ` nsp.nspname = '${schema}' `;
+    whereClause += ` table_schema = '${schema}' `;
+  }
+  if (table) {
+    if (whereClause) {
+      whereClause += ' AND ';
+    }
+    whereClause += ` table_name = '${table}' `
+  }
+  return whereClause ? ` WHERE ${whereClause}` : '';
+}
+
+function getWhereForFetchContraints(schema: string, table: string): string {
+  if (!schema && !table) return '';
+  let whereClause = '';
+  if (schema) {
+    whereClause += ` nsp.nspname = '${schema}' `;
   }
   if (table) {
     if (whereClause) {

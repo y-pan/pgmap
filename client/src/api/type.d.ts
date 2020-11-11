@@ -7,7 +7,22 @@ export enum ConstraintTypes {
 
 // items
 export type SchemaItem = string;
-export type TableItem = string;
+interface hasTableSchema {
+  table_schema: string;
+}
+interface hasTableName {
+  table_name: string;
+}
+interface hasColumnName {
+  column_name: string;
+}
+export interface TableItem extends hasTableSchema, hasTableName {
+};
+
+export interface ColumnItem extends hasTableSchema, hasTableName, hasColumnName {
+  ordinal_position: number;
+};
+
 export interface ConstraintItem {
   table_name: string;
   constraint: string;
@@ -25,3 +40,4 @@ export interface FetchResponse<T> {
 export type SchemaResponse = FetchResponse<SchemaItem>;
 export type TableResponse = FetchResponse<TableItem>;
 export type ConstraintResponse = FetchResponse<ConstraintItem>;
+export type ColumnResponse = FetchResponse<ColumnItem>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
+import { ColumnItem, TableItem } from '../../api/type';
 import { LoadingStatus } from '../../store/reducers/types';
 import { getColumns, getColumnsStatus } from '../../store/selectors/columns';
 import { getConstraints, getConstraintsStatus } from '../../store/selectors/constaints';
@@ -7,6 +8,7 @@ import { getCurrent, getSetCurrentSchemaStatus } from '../../store/selectors/sch
 import { getTables, getTablesStatus } from '../../store/selectors/tables';
 import Status from '../status/Status';
 import Table from '../table/Table';
+import SvgMap from './SvgMap';
 
 const SchemaMap: React.FC = () => {
   const currentSchema = useSelector(getCurrent);
@@ -22,12 +24,12 @@ const SchemaMap: React.FC = () => {
   && columnsStatus === LoadingStatus.SUCCEEDED
   && constraintsStatus === LoadingStatus.SUCCEEDED;
 
-  let mapComp: JSX.Element[] = [];
-
+  let allStatus: JSX.Element[] = [];
+  let canRenderSvg = false;
   if (currentSchemaStatus !== LoadingStatus.SUCCEEDED) {
-    mapComp = [<Status key="schemas-status" name="Schemas" status={currentSchemaStatus}/>]
+    allStatus = [<Status key="schemas-status" name="Schemas" status={currentSchemaStatus}/>]
   } else if (!isReadyToDrawMap) {
-    mapComp= (
+    allStatus= (
       [
         <Status key="tables-status" name="Tables" status={tablesStatus}/>,
         <Status key="columns-status" name="Columns" status={columnsStatus}/>,
@@ -36,21 +38,25 @@ const SchemaMap: React.FC = () => {
     )
   } else {
     if (!tables) {
-      mapComp = [<div> -- Tables not available -- </div>];
+      allStatus = [<div> -- Tables not available -- </div>];
     } else {
-      mapComp = tables.map((table, index) => 
-        <Table name={table.table_name} columns={columns?.filter(item => item.table_name === table.table_name)}/>
-      );
+      canRenderSvg = true;
     }
   }
   const schemaInfo = <p>Current Schema: {currentSchema}</p>;
 
   return (
     <div className="schema-map">
-      {schemaInfo}
-      <div className="schema-map-inner">
-        {mapComp}
-      </div>
+      {schemaInfo}     
+      <br />   
+      {allStatus}
+      <br/>
+      {canRenderSvg && 
+        <SvgMap
+          tables={tables}
+          columns={columns} 
+          constraints={constraints} />
+         }
     </div>
   );
 } 

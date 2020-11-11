@@ -43,3 +43,13 @@
   min-height: 400px;
   border: 1px solid lightblue;
 }
+
+svg.schema-svg-map {
+  margin: 10px;
+}
+
+rect.table {
+  stroke: lightskyblue;
+  stroke-width: 1px;
+  fill: rgba(173, 178, 249, 0.5);
+}

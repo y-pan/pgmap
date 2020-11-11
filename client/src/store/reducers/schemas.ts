@@ -12,10 +12,10 @@ import { LoadingStatus } from "./types";
 
 export interface SchemasState {
   schemas?: SchemaItem[];
-  schemasStatus?: LoadingStatus;
+  schemasStatus: LoadingStatus;
   // It makes more sense to show tables/columns for a specific schema
   current?: SchemaItem;
-  setCurrentStatus?: LoadingStatus;
+  setCurrentStatus: LoadingStatus;
 }
 
 const initialState: SchemasState = {

@@ -1,41 +1,48 @@
-import {TableItem} from '../../api/type';
-import {Action} from '../actions/actionTypes';
-import { getTablesActionFailed, getTablesActionRequested, getTablesActionSucceeded } from '../actions/tables';
-import { LoadingStatus } from './types';
+import { TableItem } from "../../api/type";
+import { Action } from "../actions/actionTypes";
+import {
+  getTablesActionFailed,
+  getTablesActionRequested,
+  getTablesActionSucceeded,
+} from "../actions/tables";
+import { LoadingStatus } from "./types";
 
 export interface TablesState {
   tables?: TableItem[]; // All tables of 1 schema, at any monent.
-  tablesStatus?: LoadingStatus;
+  tablesStatus: LoadingStatus;
 }
 
 const initialState: TablesState = {
   tables: undefined,
-  tablesStatus: LoadingStatus.INITIAL
-}
+  tablesStatus: LoadingStatus.INITIAL,
+};
 
-const tablesReducer = (state = initialState, action: Action<any>): TablesState => {
-  switch(action.type) {
+const tablesReducer = (
+  state = initialState,
+  action: Action<any>
+): TablesState => {
+  switch (action.type) {
     case getTablesActionRequested:
       return {
-        ...state, 
+        ...state,
         tables: undefined,
-        tablesStatus: LoadingStatus.REQUESTED
-      }
+        tablesStatus: LoadingStatus.REQUESTED,
+      };
     case getTablesActionFailed:
       return {
         ...state,
         tables: undefined,
-        tablesStatus: LoadingStatus.FAILED
-      }
+        tablesStatus: LoadingStatus.FAILED,
+      };
     case getTablesActionSucceeded:
       return {
         ...state,
         tables: action.payload,
-        tablesStatus: LoadingStatus.SUCCEEDED
-      }
+        tablesStatus: LoadingStatus.SUCCEEDED,
+      };
     default:
       return state;
   }
-}
+};
 
 export default tablesReducer;

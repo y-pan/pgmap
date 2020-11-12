@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "buildAndServe": "tsc && nohup node server.js",
     "build": "tsc",
     "start2": "tsc && node server.js",
     "start": "nodemon --watch './**' --ext 'ts,json' --ignore './**/*.spec.ts' --exec 'ts-node ./server.ts'"

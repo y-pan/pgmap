@@ -19,11 +19,12 @@ interface XY {
   y: number;
 }
 
-interface TableDrawData extends XY {
-  x: number;
-  y: number;
+interface WH {
   w: number;
   h: number;
+}
+
+interface TableDrawData extends XY, WH {
   type: TableTypes;
   name: string;
   columns: ColumnItem[]; // columns of the table
@@ -34,11 +35,20 @@ function tableSize(size: number): {w: number, h: number} {
   return { w: cw, h: ch * size + 1}; // 1 is for table_name itself
 }
 
+interface ColumnDrawData extends ColumnItem, XY, WH {
+  // column need to know its constraint type(s)
+}
+
+interface ConstraintDrawData extends ConstraintItem {
+  // connect all column points when hover/double-click   
+  // constraint need to know where column(s) located, for
+}
+
 function draw(
   svgDom: SVGElement, 
   tables: TableItem[], 
-  columns: ColumnItem[],
-  constraints: ConstraintItem[]) {
+  columns: ColumnItem[], 
+  constraints: ConstraintItem[]) { 
     if (!svgDom || !tables || !columns) {
       console.warn("Cannot draw!");
       return;
@@ -54,7 +64,7 @@ function draw(
     const svgW = window.innerWidth - 20;
 
     let cursorX = 0, cursorY = 0, cursorH = 0;
-    const tableNameToColumnsMap: SMap<ColumnItem[]> = groupBy<ColumnItem>(columns, column => column.table_name);
+    const tableNameToColumnsMap: SMap<ColumnItem[]> = groupBy<ColumnItem, ColumnItem>(columns, column => column.table_name);
     const tablesData: TableDrawData[] = [];
     for (let tableItem of tables) {
       const tableCols = tableNameToColumnsMap[tableItem.table_name];
@@ -85,11 +95,11 @@ function draw(
       td => ({x: td.x, y: td.y})
     );
     
-    // const columnNameToConstraintMap: SMap<ConstraintItem> = toDistinctMap<ConstraintItem, ConstraintItem>(
-    //   constraints,
-    //   constr => constr.constraint,
-    //   constr => constr
-    // );
+    const tableNameToConstraintsMap: SMap<ConstraintItem[]> = groupBy<ConstraintItem, ConstraintItem>(
+      constraints, 
+      constraint => constraint.table_name
+      // constraint => constraint.
+      );
     
     // draw
     const svg = d3.select(svgDom)
@@ -164,7 +174,21 @@ function draw(
       }
       return xy.y + d.ordinal_position * fontSize;
     })
-    .text(d => d.column_name);
+    .text(d => {
+      const colConstrs: ConstraintItem[] = tableNameToConstraintsMap[d.table_name];
+      if (!colConstrs || colConstrs.length === 0) return d.column_name;
+      // get all constraints
+      let conTyps = []
+      for (let con of colConstrs) {
+        let indexes = con.columns_index;
+        if (indexes && indexes.includes(d.ordinal_position)) {
+          conTyps.push(con.constraint_type);
+        } 
+      }
+      if (conTyps.length === 0) return d.column_name;
+      let conTypeStr = conTyps.join(",")
+      return `${d.column_name} [${conTypeStr}]` 
+    });
     
     // const gColumnInner = gColumnOuter
     // .selectAll('g.g-column-inner')

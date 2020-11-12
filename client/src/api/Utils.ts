@@ -16,18 +16,19 @@ export interface SMap<T> {
   [key: string]: T;
 }
 
-export function groupBy<T>(
+export function groupBy<T, V>(
   array: T[],
-  keyExtrator: (item: T) => string
-): SMap<T[]> {
-  const map: SMap<T[]> = {};
+  keyExtractor: (item: T) => string,
+  valExtractor?: (item: T) => V
+): SMap<T[] | V[]> {
+  const map: SMap<any[]> = {};
 
   for (let item of array) {
-    const key = keyExtrator(item);
+    const key = keyExtractor(item);
     if (!map[key]) {
       map[key] = [];
     }
-    map[key].push(item);
+    map[key].push(valExtractor ? valExtractor(item) : item);
   }
 
   return map;

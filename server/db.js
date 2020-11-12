@@ -77,7 +77,7 @@ async function fetchContraints(schema, table) {
     (SELECT rel2.relname 
       FROM pg_catalog.pg_class rel2 
       WHERE rel2.oid = con.confrelid) AS ref_table_name,
-    con.contype AS contraint_type,
+    con.contype AS constraint_type,
     con.conkey AS columns_index, 
     con.confkey AS ref_columns_index
   FROM 

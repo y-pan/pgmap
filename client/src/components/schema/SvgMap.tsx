@@ -1,7 +1,7 @@
 import React from 'react';
-import { ColumnItem, ConstraintItem, TableItem } from '../../api/type';
+import { ColumnItem, ConstraintItem, TableItem, TableTypes } from '../../api/type';
 import * as d3 from 'd3';
-import { groupBy, SMap, toDistinctMap } from '../../api/Utils';
+import { compare, groupBy, SMap, toDistinctMap } from '../../api/Utils';
 
 interface Props {
   tables: TableItem[];
@@ -11,7 +11,7 @@ interface Props {
 
 const fontSize = 15; // For "flyway_schema_history" fontSize 15 -> 116px w * 18px h
 const ch = 20; // cell height 
-const cw = 200; // cell width 
+const cw = 300; // cell width 
 const tableVSpace = 15, tableHSpace = 15;
 
 interface XY {
@@ -24,6 +24,7 @@ interface TableDrawData extends XY {
   y: number;
   w: number;
   h: number;
+  type: TableTypes;
   name: string;
   columns: ColumnItem[]; // columns of the table
 }
@@ -42,9 +43,14 @@ function draw(
       console.warn("Cannot draw!");
       return;
     }
-    // svg.clientWidth 
-    const svgBoundigRect = svgDom.getBoundingClientRect();
-    console.log("svg box", svgBoundigRect);
+
+    // sort by type asc, name asc, 
+    tables.sort((t1, t2) => {
+      let compType = compare(t1.table_type, t2.table_type);
+      if (compType !== 0) return compType;
+      return compare(t1.table_name, t2.table_name);
+    });
+
     const svgW = window.innerWidth - 20;
 
     let cursorX = 0, cursorY = 0, cursorH = 0;
@@ -57,7 +63,7 @@ function draw(
       if (cursorX + w < svgW) {
         // keep append table to the right, on same row
         tablesData.push(
-          {name: tableItem.table_name, columns: tableCols, x: cursorX, y: cursorY, w, h}
+          {name: tableItem.table_name, type: tableItem.table_type, columns: tableCols, x: cursorX, y: cursorY, w, h}
         );
         cursorX = cursorX + w + tableHSpace;
         cursorH = Math.max(cursorH, h);
@@ -67,17 +73,25 @@ function draw(
         cursorY += Math.max(cursorH, h) + tableVSpace;
         cursorH = h;
         tablesData.push(
-          {name: tableItem.table_name, columns: tableCols, x: cursorX, y: cursorY, w, h}
+          {name: tableItem.table_name, type: tableItem.table_type, columns: tableCols, x: cursorX, y: cursorY, w, h}
         )
         cursorX += w + tableHSpace;
       }
     }
+
     const tableNameToXYMap: SMap<XY> = toDistinctMap<TableDrawData, XY>(
       tablesData, 
       td => td.name, 
       td => ({x: td.x, y: td.y})
     );
     
+    // const columnNameToConstraintMap: SMap<ConstraintItem> = toDistinctMap<ConstraintItem, ConstraintItem>(
+    //   constraints,
+    //   constr => constr.constraint,
+    //   constr => constr
+    // );
+    
+    // draw
     const svg = d3.select(svgDom)
     .attr("width", svgW)
     .attr("height", cursorY + cursorH);
@@ -90,10 +104,11 @@ function draw(
     .classed("g-table", true);
     // - tables: boxs
     gTable.selectAll('rect.table')
-    .data(tablesData)
-    // .enter().append('rect')
-    .join('rect')
+    .data(tablesData) //, function(d) {return (d as any).name;})
+    .enter().append('rect')
+    // .join('rect')
     .classed("table", true)
+    .classed('table-view', d => d.type === TableTypes.VIEW)
     .attr('x', d => d.x)
     .attr('y', d => d.y)
     .attr('width', d => d.w)
@@ -103,9 +118,10 @@ function draw(
     // - table: names
     gTable
     .selectAll('rect.table-name')
-    .data(tablesData)
+    .data(tablesData) //, function(d) {return (d as any).name;})
     .join('rect')
     .classed("table-name", true)
+    .classed('table-view', d => d.type === TableTypes.VIEW)
     .attr('x', d => d.x)
     .attr('y', d => d.y)
     .attr('width', d => d.w)
@@ -113,9 +129,10 @@ function draw(
 
     gTable
     .selectAll('text.table-name')
-    .data(tablesData)
+    .data(tablesData) //, function(d) {return (d as any).name;})
     .join('text')
     .classed("table-name", true)
+    .classed('table-view', d => d.type === TableTypes.VIEW)
     .attr('x', d => d.x + cw/2)
     .attr('y', d => d.y + fontSize)
     .text(d => d.name);

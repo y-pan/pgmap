@@ -13,27 +13,29 @@ async function fetchSchemas() {
     logQuery(queryStr);
     const { rows, rowCount } = await pool.query(queryStr);
     return {
-        items: rows.map(schema => schema.schema_name),
-        count: rowCount
+        items: rows.map((schema) => schema.schema_name),
+        count: rowCount,
     };
 }
 exports.fetchSchemas = fetchSchemas;
 async function fetchTables(schema) {
-    let whereClause = '';
+    let whereClause = "";
     if (schema) {
-        whereClause = `
-    WHERE table_schema = '${schema}' AND table_type = 'BASE TABLE'
-    `;
+        whereClause = `WHERE table_schema = '${schema}'`;
+        // whereClause = `
+        // WHERE table_schema = '${schema}' AND table_type = 'BASE TABLE'
+        // `
     }
     else {
-        whereClause = `
-    WHERE table_type = 'BASE TABLE'
-    `;
+        // whereClause = `
+        // WHERE table_type = 'BASE TABLE'
+        // `
     }
     const queryStr = `
   SELECT 
-  table_schema,
-  table_name 
+    table_schema,
+    table_name,
+    table_type
   FROM information_schema.tables 
   ${whereClause}
   `;
@@ -41,7 +43,7 @@ async function fetchTables(schema) {
     const { rowCount, rows } = await pool.query(queryStr);
     return {
         count: rowCount,
-        items: rows //.map(row => row.table_name)
+        items: rows,
     };
 }
 exports.fetchTables = fetchTables;
@@ -60,7 +62,7 @@ async function fetchColumnsByTable(schema, table) {
     const { rowCount, rows } = await pool.query(queryStr);
     return {
         count: rowCount,
-        items: rows // rows.sort(colDef => colDef.ordinal_position).map(colDef => colDef.column_name)
+        items: rows,
     };
 }
 exports.fetchColumnsByTable = fetchColumnsByTable;
@@ -92,29 +94,29 @@ async function fetchContraints(schema, table) {
     const { rowCount, rows } = await pool.query(queryStr);
     return {
         count: rowCount,
-        items: rows
+        items: rows,
     };
 }
 exports.fetchContraints = fetchContraints;
 function getWhereForQueryColumns(schema, table) {
     if (!schema && !table)
-        return '';
-    let whereClause = '';
+        return "";
+    let whereClause = "";
     if (schema) {
         whereClause += ` table_schema = '${schema}' `;
     }
     if (table) {
         if (whereClause) {
-            whereClause += ' AND ';
+            whereClause += " AND ";
         }
         whereClause += ` table_name = '${table}' `;
     }
-    return whereClause ? ` WHERE ${whereClause}` : '';
+    return whereClause ? ` WHERE ${whereClause}` : "";
 }
 function getWhereForFetchContraints(schema, table) {
     if (!schema && !table)
-        return '';
-    let whereClause = '';
+        return "";
+    let whereClause = "";
     if (schema) {
         whereClause += ` nsp.nspname = '${schema}' `;
     }
@@ -125,7 +127,7 @@ function getWhereForFetchContraints(schema, table) {
         whereClause += ` rel.relname = '${table}' `;
     }
     // AND con.contype IN ('f', 'p', 'u')
-    return whereClause ? ` WHERE ${whereClause}` : '';
+    return whereClause ? ` WHERE ${whereClause}` : "";
 }
 function logQuery(query) {
     isDebug && console.log(`[query]:\n${query}`);

@@ -1,8 +1,8 @@
-// 
+//
 export enum ConstraintTypes {
-  PRIMARY_KEY = 'p',
-  FOREIGN_KEY = 'f',
-  UNIQUE = 'u',
+  PRIMARY_KEY = "p",
+  FOREIGN_KEY = "f",
+  UNIQUE = "u",
 }
 
 // items
@@ -16,12 +16,22 @@ interface hasTableName {
 interface hasColumnName {
   column_name: string;
 }
-export interface TableItem extends hasTableSchema, hasTableName {
-};
 
-export interface ColumnItem extends hasTableSchema, hasTableName, hasColumnName {
+export enum TableTypes {
+  BASE_TABLE = "BASE TABLE",
+  VIEW = "VIEW",
+}
+
+export interface TableItem extends hasTableSchema, hasTableName {
+  table_type: TableTypes;
+}
+
+export interface ColumnItem
+  extends hasTableSchema,
+    hasTableName,
+    hasColumnName {
   ordinal_position: number;
-};
+}
 
 export interface ConstraintItem {
   table_name: string;
@@ -40,4 +50,4 @@ export interface FetchResponse<T> {
 export type SchemaResponse = FetchResponse<SchemaItem>;
 export type TableResponse = FetchResponse<TableItem>;
 export type ConstraintResponse = FetchResponse<ConstraintItem>;
-export type ColumnResponse = FetchResponse<ColumnItem>
+export type ColumnResponse = FetchResponse<ColumnItem>;

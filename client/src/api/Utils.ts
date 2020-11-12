@@ -45,3 +45,9 @@ export function toDistinctMap<T, V>(
   }
   return map;
 }
+
+export function compare<T>(v1: T, v2: T): number {
+  if (v1 < v2) return -1;
+  if (v1 > v2) return 1;
+  return 0;
+}

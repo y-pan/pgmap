@@ -1,11 +1,11 @@
-import { Pool, Client, QueryResult, QueryResultRow } from 'pg';
-const secret = require("./secret/secret.json")
-const pool = new Pool(secret)
+import { Pool, Client, QueryResult, QueryResultRow } from "pg";
+const secret = require("./secret/secret.json");
+const pool = new Pool(secret);
 const isDebug = true;
 
 interface FetchResult {
-  items: string[] | QueryResultRow[] | any[],
-  count: number
+  items: string[] | QueryResultRow[] | any[];
+  count: number;
 }
 
 export async function fetchSchemas(): Promise<FetchResult> {
@@ -14,44 +14,53 @@ export async function fetchSchemas(): Promise<FetchResult> {
   FROM information_schema.schemata
   `;
 
-  logQuery(queryStr)
+  logQuery(queryStr);
 
-  const {rows, rowCount}: QueryResult<QueryResultRow> = await pool.query(queryStr);
+  const { rows, rowCount }: QueryResult<QueryResultRow> = await pool.query(
+    queryStr
+  );
   return {
-    items: rows.map(schema => schema.schema_name),
-    count: rowCount
-  }
+    items: rows.map((schema) => schema.schema_name),
+    count: rowCount,
+  };
 }
 
 export async function fetchTables(schema?: string): Promise<FetchResult> {
-  let whereClause = ''
+  let whereClause = "";
   if (schema) {
-    whereClause = `
-    WHERE table_schema = '${schema}' AND table_type = 'BASE TABLE'
-    `
+    whereClause = `WHERE table_schema = '${schema}'`;
+    // whereClause = `
+    // WHERE table_schema = '${schema}' AND table_type = 'BASE TABLE'
+    // `
   } else {
-    whereClause = `
-    WHERE table_type = 'BASE TABLE'
-    `
+    // whereClause = `
+    // WHERE table_type = 'BASE TABLE'
+    // `
   }
   const queryStr = `
   SELECT 
-  table_schema,
-  table_name 
+    table_schema,
+    table_name,
+    table_type
   FROM information_schema.tables 
   ${whereClause}
   `;
 
-  logQuery(queryStr)
+  logQuery(queryStr);
 
-  const {rowCount, rows}: QueryResult<QueryResultRow> = await pool.query(queryStr);
+  const { rowCount, rows }: QueryResult<QueryResultRow> = await pool.query(
+    queryStr
+  );
   return {
-    count: rowCount, 
-    items: rows //.map(row => row.table_name)
-  }
+    count: rowCount,
+    items: rows, //.map(row => row.table_name)
+  };
 }
 
-export async function fetchColumnsByTable(schema: string, table: string): Promise<FetchResult> {
+export async function fetchColumnsByTable(
+  schema: string,
+  table: string
+): Promise<FetchResult> {
   const whereClause = getWhereForQueryColumns(schema, table);
 
   const queryStr = `
@@ -65,15 +74,20 @@ export async function fetchColumnsByTable(schema: string, table: string): Promis
   `;
 
   logQuery(queryStr);
-  
-  const {rowCount, rows}: QueryResult<QueryResultRow> = await pool.query(queryStr);
+
+  const { rowCount, rows }: QueryResult<QueryResultRow> = await pool.query(
+    queryStr
+  );
   return {
-    count: rowCount, 
-    items: rows // rows.sort(colDef => colDef.ordinal_position).map(colDef => colDef.column_name)
+    count: rowCount,
+    items: rows, // rows.sort(colDef => colDef.ordinal_position).map(colDef => colDef.column_name)
   };
 }
 
-export async function fetchContraints(schema: string, table: string): Promise<FetchResult> {
+export async function fetchContraints(
+  schema: string,
+  table: string
+): Promise<FetchResult> {
   const whereClause = getWhereForFetchContraints(schema, table);
 
   const queryStr = `
@@ -99,33 +113,35 @@ export async function fetchContraints(schema: string, table: string): Promise<Fe
     rel.relname asc, con.contype desc
   `;
 
-  logQuery(queryStr)
+  logQuery(queryStr);
 
-  const {rowCount, rows}: QueryResult<QueryResultRow> = await pool.query(queryStr);
+  const { rowCount, rows }: QueryResult<QueryResultRow> = await pool.query(
+    queryStr
+  );
   return {
     count: rowCount,
-    items: rows
+    items: rows,
   };
 }
 
 function getWhereForQueryColumns(schema, table): string {
-  if (!schema && !table) return '';
-  let whereClause = '';
+  if (!schema && !table) return "";
+  let whereClause = "";
   if (schema) {
     whereClause += ` table_schema = '${schema}' `;
   }
   if (table) {
     if (whereClause) {
-      whereClause += ' AND ';
+      whereClause += " AND ";
     }
-    whereClause += ` table_name = '${table}' `
+    whereClause += ` table_name = '${table}' `;
   }
-  return whereClause ? ` WHERE ${whereClause}` : '';
+  return whereClause ? ` WHERE ${whereClause}` : "";
 }
 
 function getWhereForFetchContraints(schema: string, table: string): string {
-  if (!schema && !table) return '';
-  let whereClause = '';
+  if (!schema && !table) return "";
+  let whereClause = "";
   if (schema) {
     whereClause += ` nsp.nspname = '${schema}' `;
   }
@@ -136,7 +152,7 @@ function getWhereForFetchContraints(schema: string, table: string): string {
     whereClause += ` rel.relname = '${table}' `;
   }
   // AND con.contype IN ('f', 'p', 'u')
-  return whereClause ? ` WHERE ${whereClause}` : '';
+  return whereClause ? ` WHERE ${whereClause}` : "";
 }
 
 function logQuery(query) {

@@ -58,6 +58,7 @@ rect.table {
   fill: rgba(173, 178, 249, 0.5);
   stroke: lightskyblue;
 }
+
 rect.table-name {
   fill: rgba(109, 133, 240, 0.5);
   stroke: rgba(16, 17, 17, 0.781);
@@ -71,4 +72,14 @@ text {
 
 text.table-name {
   font-weight: bold;
+}
+
+rect.table-view {
+  /* View type*/
+  fill: rgba(rgba(232, 117, 222, 0.557), green, blue, 1);
+  stroke: rgba(255, 0, 0, 0.7);
+}
+
+text.table-view {
+  font-weight: normal;
 }

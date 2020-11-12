@@ -1,5 +1,5 @@
 import React from 'react';
-import { ColumnItem, ConstraintItem, TableItem, TableTypes } from '../../api/type';
+import { ColumnItem, ConstraintItem, ConstraintTypes, TableItem, TableTypes } from '../../api/type';
 import * as d3 from 'd3';
 import { compare, groupBy, SMap, toDistinctMap } from '../../api/Utils';
 
@@ -11,7 +11,7 @@ interface Props {
 
 const fontSize = 15; // For "flyway_schema_history" fontSize 15 -> 116px w * 18px h
 const ch = 20; // cell height 
-const cw = 300; // cell width 
+const cw = 500; // cell width 
 const tableVSpace = 15, tableHSpace = 15;
 
 interface XY {
@@ -178,16 +178,24 @@ function draw(
       const colConstrs: ConstraintItem[] = tableNameToConstraintsMap[d.table_name];
       if (!colConstrs || colConstrs.length === 0) return d.column_name;
       // get all constraints
-      let conTyps = []
+      let conTyps = [];
+      let fkeyStrs = []; // 
       for (let con of colConstrs) {
         let indexes = con.columns_index;
         if (indexes && indexes.includes(d.ordinal_position)) {
           conTyps.push(con.constraint_type);
+          if (con.constraint_type === ConstraintTypes.FOREIGN_KEY) {
+            const refTable = con.ref_table_name as string;
+            const refCols = con.ref_columns_index as number[];
+            const refColItems = tableNameToColumnsMap[refTable]; // ordered by ordinal 
+            const refColNames = refCols.map(ordinal => refColItems[ordinal-1].column_name).join(",");
+            fkeyStrs.push(`${refTable}.${refColNames}`);
+          }
         } 
       }
       if (conTyps.length === 0) return d.column_name;
-      let conTypeStr = conTyps.join(",")
-      return `${d.column_name} [${conTypeStr}]` 
+      let conTypeStr = conTyps.join(",");
+      return `${d.column_name} [ ${conTypeStr.toUpperCase()} ] ${fkeyStrs.join(',')}` 
     });
     
     // const gColumnInner = gColumnOuter

@@ -28,7 +28,7 @@ export default function SelectedListItem() {
   const onClickTable = (
     table: TableItem,
   ) => {
-    dispatch(setFocusTableSaga(table));
+    focusTable !== table.table_name && dispatch(setFocusTableSaga(table.table_name));
   };
 
   if (tablesStatus === LoadingStatus.INITIAL) {
@@ -56,7 +56,7 @@ export default function SelectedListItem() {
           key={index}
           button
           dense
-          selected={table.table_name === focusTable?.table_name}
+          selected={table.table_name === focusTable}
           onClick={() => onClickTable(table)}>
           <ListItemText primary={table.table_name}/>
       </ListItem>

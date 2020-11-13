@@ -1,10 +1,11 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
+import { TableItem } from '../../api/type';
 import { LoadingStatus } from '../../store/reducers/types';
 import { getColumns, getColumnsStatus } from '../../store/selectors/columns';
 import { getConstraints, getConstraintsStatus } from '../../store/selectors/constaints';
 import { getCurrent, getSetCurrentSchemaStatus } from '../../store/selectors/schemas';
-import { getTables, getTablesStatus } from '../../store/selectors/tables';
+import { getFocusTable, getTables, getTablesStatus } from '../../store/selectors/tables';
 import Status from '../status/Status';
 import SvgMap from './SvgMap';
 
@@ -17,7 +18,8 @@ const SchemaMap: React.FC = () => {
   const columnsStatus = useSelector(getColumnsStatus);
   const constraints = useSelector(getConstraints);
   const constraintsStatus = useSelector(getConstraintsStatus);
-
+  const focusTable = useSelector(getFocusTable);
+  
   const isReadyToDrawMap = tablesStatus === LoadingStatus.SUCCEEDED 
   && columnsStatus === LoadingStatus.SUCCEEDED
   && constraintsStatus === LoadingStatus.SUCCEEDED;
@@ -47,6 +49,7 @@ const SchemaMap: React.FC = () => {
       {allStatus}
       {canRenderSvg && 
         <SvgMap
+          focusTable={focusTable}
           tables={tables}
           columns={columns} 
           constraints={constraints} />

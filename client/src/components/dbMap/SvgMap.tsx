@@ -2,8 +2,12 @@ import React from 'react';
 import { ColumnItem, ConstraintItem, ConstraintTypes, TableItem, TableTypes } from '../../api/type';
 import * as d3 from 'd3';
 import { compare, groupBy, SMap, toDistinctMap } from '../../api/Utils';
+import { dispatch } from 'd3';
+import { setFocusTableSaga } from '../../store/actions/tables';
+import { useDispatch } from 'react-redux';
 
 interface Props {
+  focusTable?: string;
   tables: TableItem[];
   columns: ColumnItem[];
   constraints: ConstraintItem[];
@@ -46,27 +50,58 @@ interface ConstraintDrawData extends ConstraintItem {
 
 function draw(
   svgDom: SVGElement, 
+  focusTable: string | undefined,
   tables: TableItem[], 
   columns: ColumnItem[], 
-  constraints: ConstraintItem[]) { 
+  constraints: ConstraintItem[],
+  setFocusTable: (table: string) => any) { 
     if (!svgDom || !tables || !columns) {
       console.warn("Cannot draw!");
       return;
     }
-
-    // sort by type asc, name asc, 
-    tables.sort((t1, t2) => {
-      let compType = compare(t1.table_type, t2.table_type);
-      if (compType !== 0) return compType;
-      return compare(t1.table_name, t2.table_name);
-    });
-
     const svgW = Math.max(800, window.innerWidth - 300);
+
+    // ********* prepare data *************
+    // sort by type asc, name asc, backend already sorted nicely
+    // tables.sort((t1, t2) => {
+    //   let compType = compare(t1.table_type, t2.table_type);
+    //   if (compType !== 0) return compType;
+    //   return compare(t1.table_name, t2.table_name);
+    // });
+    
+    const tableNameToConstraintsMap: SMap<ConstraintItem[]> = groupBy<ConstraintItem, ConstraintItem>(
+      constraints, 
+      constraint => constraint.table_name
+      // constraint => constraint.
+      );
+
+    let targetTables: TableItem[] = [];
+    if (!focusTable) {
+      targetTables = tables;
+    } else {
+      // only display on tables having relationship with the "focusTable"
+
+      const refTables: Set<string> = new Set();
+      const focusConstrs = tableNameToConstraintsMap[focusTable];
+      for (let constr of focusConstrs) {
+        constr.ref_table_name && refTables.add(constr.ref_table_name);
+      }
+      
+      for (let table of tables) {
+        if (table.table_name === focusTable) {
+          targetTables.unshift(table);
+        }
+        if (refTables.has(table.table_name)) {
+          targetTables.push(table);
+        }
+      }
+      
+    }
 
     let cursorX = 0, cursorY = 0, cursorH = 0;
     const tableNameToColumnsMap: SMap<ColumnItem[]> = groupBy<ColumnItem, ColumnItem>(columns, column => column.table_name);
     const tablesData: TableDrawData[] = [];
-    for (let tableItem of tables) {
+    for (let tableItem of targetTables) {
       const tableCols = tableNameToColumnsMap[tableItem.table_name];
       const {w, h} = tableSize(tableCols.length);
       
@@ -94,12 +129,6 @@ function draw(
       td => td.name, 
       td => ({x: td.x, y: td.y})
     );
-    
-    const tableNameToConstraintsMap: SMap<ConstraintItem[]> = groupBy<ConstraintItem, ConstraintItem>(
-      constraints, 
-      constraint => constraint.table_name
-      // constraint => constraint.
-      );
     
     // draw
     const svg = d3.select(svgDom)
@@ -132,10 +161,17 @@ function draw(
     .join('rect')
     .classed("table-name", true)
     .classed('table-view', d => d.type === TableTypes.VIEW)
+    .classed('table-focus', d => d.name === focusTable)
     .attr('x', d => d.x)
     .attr('y', d => d.y)
     .attr('width', d => d.w)
-    .attr('height', ch);
+    .attr('height', ch)
+    .on("click", function(event, d) {
+      event.stopPropagation();
+      if (focusTable !== d.name) {
+        setFocusTable(d.name)
+      }
+    })
 
     gTable
     .selectAll('text.table-name')
@@ -143,9 +179,16 @@ function draw(
     .join('text')
     .classed("table-name", true)
     .classed('table-view', d => d.type === TableTypes.VIEW)
+    .classed('table-focus', d => d.name === focusTable)
     .attr('x', d => d.x + cw/2)
     .attr('y', d => d.y + fontSize)
-    .text(d => d.name);
+    .text(d => d.name)
+    .on("click", function(event, d) {
+      event.stopPropagation();
+      if (focusTable !== d.name) {
+        setFocusTable(d.name)
+      }
+    });
 
     // columns
     const gColumnOuter = svg.append('g')
@@ -159,8 +202,6 @@ function draw(
     .attr('x', d => {
       const xy: XY = tableNameToXYMap[d.table_name];
       if (!xy) {
-        // This column might be from a table view, and which is not fetched in tables;
-        console.log(`Table ${d.table_name} not found for column ${d.column_name}, in schema ${d.table_schema}. Make sure query criteria compatible for table and column.`);
         return -1000; //0 + cw / 2;
       }
       return xy.x + cw / 2;
@@ -168,8 +209,6 @@ function draw(
     .attr('y', (d, index) => {
       const xy: XY = tableNameToXYMap[d.table_name]
       if (!xy) {
-        // This column might be from a table view, and which is not fetched in tables;
-        console.log(`Table ${d.table_name} not found for column ${d.column_name}, in schema ${d.table_schema}. Make sure query criteria compatible for table and column.`);
         return -1000;
       }
       return xy.y + d.ordinal_position * fontSize;
@@ -200,8 +239,20 @@ function draw(
     
   }
 
-const SvgMap: React.FC<Props> = ({tables, columns, constraints}) => {
-  return <svg className="schema-svg-map" ref={ref => ref && draw(ref, tables, columns, constraints)}/>
+const SvgMap: React.FC<Props> = ({focusTable, tables, columns, constraints}) => {
+  const dispatch = useDispatch();
+
+  return <svg 
+    className="schema-svg-map" 
+    ref={ref => ref && draw(
+      ref, 
+      focusTable, 
+      tables, 
+      columns, 
+      constraints, 
+      table => dispatch(setFocusTableSaga(table))
+      )}
+  />
 }
 
 export default SvgMap;

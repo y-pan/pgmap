@@ -39,4 +39,19 @@ export const {
     setFocusTableSucceeded,
     setFocusTableFailed,
   ],
-} = actionTypesCreatorsOf<TableItem>(NAMESPACE, "setFocusTable");
+} = actionTypesCreatorsOf<string>(NAMESPACE, "setFocusTable");
+
+export const {
+  types: [
+    unsetFocusTableActionSaga,
+    unsetFocusTableActionRequested,
+    unsetFocusTableActionSucceeded,
+    unsetFocusTableActionFailed,
+  ],
+  creators: [
+    unsetFocusTableSaga,
+    unsetFocusTableRequested,
+    unsetFocusTableSucceeded,
+    unsetFocusTableFailed,
+  ],
+} = actionTypesCreatorsOf<TableItem>(NAMESPACE, "unsetFocusTable");

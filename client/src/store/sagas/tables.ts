@@ -30,7 +30,7 @@ function* getTablesSaga() {
   }
 }
 
-function* setFocusTableSaga(table: TableItem) {
+function* setFocusTableSaga(table: string) {
   try {
     if (table) {
       yield put(setFocusTableSucceeded(table));

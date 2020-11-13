@@ -7,13 +7,14 @@ import {
   setFocusTableActionFailed,
   setFocusTableActionRequested,
   setFocusTableActionSucceeded,
+  unsetFocusTableActionSucceeded,
 } from "../actions/tables";
 import { LoadingStatus } from "./types";
 
 export interface TablesState {
   tables?: TableItem[]; // All tables of 1 schema, at any monent.
   tablesStatus: LoadingStatus;
-  focusTable?: TableItem;
+  focusTable?: string;
   focusTableStatus: LoadingStatus;
 }
 
@@ -65,7 +66,12 @@ const tablesReducer = (
         focusTable: undefined,
         focusTableStatus: LoadingStatus.FAILED,
       };
-
+    case unsetFocusTableActionSucceeded:
+      return {
+        ...state,
+        focusTable: undefined,
+        focusTableStatus: LoadingStatus.INITIAL,
+      };
     default:
       return state;
   }

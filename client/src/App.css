@@ -72,6 +72,7 @@ rect.table {
 rect.table-name {
   fill: rgba(249, 249, 249, 0.5);
   stroke: rgba(16, 17, 17, 0.781);
+  cursor: pointer;
 }
 
 text {
@@ -82,6 +83,7 @@ text {
 
 text.table-name {
   font-weight: bold;
+  cursor: pointer;
 }
 
 rect.table-view {
@@ -92,4 +94,12 @@ rect.table-view {
 
 text.table-view {
   font-weight: normal;
+}
+
+rect.table-focus {
+  stroke: blue;
+}
+
+text.table-focus {
+  fill: blue;
 }

@@ -38,17 +38,14 @@ const SchemaMap: React.FC = () => {
     )
   } else {
     if (!tables) {
-      allStatus = [<div> -- Tables not available -- </div>];
+      allStatus = [<div> -- No Table Available -- </div>];
     } else {
       canRenderSvg = true;
     }
   }
-  const schemaInfo = <p>Current Schema: {currentSchema}</p>;
 
   return (
     <div className="schema-map">
-      {schemaInfo}     
-      <br />   
       {allStatus}
       <br/>
       {canRenderSvg && 

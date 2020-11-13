@@ -37,6 +37,16 @@
   }
 }
 
+table {
+  border-collapse: collapse;
+}
+
+td,
+th {
+  vertical-align: top;
+  border: 1px solid grey;
+}
+
 .main-map {
   width: 99%;
   min-width: 400px;
@@ -60,7 +70,7 @@ rect.table {
 }
 
 rect.table-name {
-  fill: rgba(109, 133, 240, 0.5);
+  fill: rgba(249, 249, 249, 0.5);
   stroke: rgba(16, 17, 17, 0.781);
 }
 

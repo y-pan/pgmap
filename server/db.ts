@@ -44,6 +44,7 @@ export async function fetchTables(schema?: string): Promise<FetchResult> {
     table_type
   FROM information_schema.tables 
   ${whereClause}
+  order by table_type, table_name
   `;
 
   logQuery(queryStr);
@@ -137,6 +138,31 @@ function getWhereForQueryColumns(schema, table): string {
     whereClause += ` table_name = '${table}' `;
   }
   return whereClause ? ` WHERE ${whereClause}` : "";
+}
+
+async function fetchIndexes(
+  schema: string,
+  table: string
+): Promise<FetchResult> {
+  const whereClause = ``;
+  const queryStr = `
+  SELECT
+  * -- schemaname, tablename, indexname, tablespace, indexdef
+    FROM
+        pg_indexes
+    -- WHERE
+    --     schemaname = 'public'
+    ORDER BY
+        tablename,
+        indexname;
+    `;
+  const { rowCount, rows }: QueryResult<QueryResultRow> = await pool.query(
+    queryStr
+  );
+  return {
+    count: rowCount,
+    items: rows,
+  };
 }
 
 function getWhereForFetchContraints(schema: string, table: string): string {

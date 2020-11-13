@@ -38,6 +38,7 @@ async function fetchTables(schema) {
     table_type
   FROM information_schema.tables 
   ${whereClause}
+  order by table_type, table_name
   `;
     logQuery(queryStr);
     const { rowCount, rows } = await pool.query(queryStr);
@@ -112,6 +113,25 @@ function getWhereForQueryColumns(schema, table) {
         whereClause += ` table_name = '${table}' `;
     }
     return whereClause ? ` WHERE ${whereClause}` : "";
+}
+async function fetchIndexes(schema, table) {
+    const whereClause = ``;
+    const queryStr = `
+  SELECT
+  * -- schemaname, tablename, indexname, tablespace, indexdef
+    FROM
+        pg_indexes
+    -- WHERE
+    --     schemaname = 'public'
+    ORDER BY
+        tablename,
+        indexname;
+    `;
+    const { rowCount, rows } = await pool.query(queryStr);
+    return {
+        count: rowCount,
+        items: rows,
+    };
 }
 function getWhereForFetchContraints(schema, table) {
     if (!schema && !table)

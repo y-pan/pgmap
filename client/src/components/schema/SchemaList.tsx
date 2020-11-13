@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getSchemasSaga, setCurrentSchemaSaga } from '../../store/actions/schemas';
 import { LoadingStatus } from '../../store/reducers/types';
 import { getCurrent, getSchemas, getSchemasStatus } from '../../store/selectors/schemas';
+import Breadcrumbs from '@material-ui/core/Breadcrumbs';
+import Link from '@material-ui/core/Link';
 
 const SchemaList: React.FC = () => {
   const dispatch = useDispatch();
@@ -17,21 +19,27 @@ const SchemaList: React.FC = () => {
   }, [dispatch, schemasStatus])
 
   let listItems: JSX.Element[] = [] 
+
+  function onClickSchema (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>, schema: string) {
+    event.preventDefault();
+    currentSchema !== schema && dispatch(setCurrentSchemaSaga(schema))
+  }
   if (schemas) {
     listItems = schemas.map((schema, index) => (
-      <li key={index} style={{display: "inline-block", margin: 5}}>
-        <a onClick={() => currentSchema !== schema && dispatch(setCurrentSchemaSaga(schema))}>{schema}</a>
-      </li>
+      <Link 
+        key={index} 
+        style={{cursor: "pointer"}}
+        color={ currentSchema === schema ? "textPrimary" : "inherit"} 
+        onClick={(event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => onClickSchema(event, schema)}>
+        {schema}
+      </Link>
     ));
   }
 
   return (
-    <>
-      <p>Schemas:</p>
-      <ul>
-        {listItems}
-      </ul>
-    </>
+    <Breadcrumbs aria-label="breadcrumb" itemsBeforeCollapse={10}>
+      {listItems}
+    </Breadcrumbs>
   )
 }
 

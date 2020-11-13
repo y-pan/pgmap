@@ -1,13 +1,11 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { ColumnItem, TableItem } from '../../api/type';
 import { LoadingStatus } from '../../store/reducers/types';
 import { getColumns, getColumnsStatus } from '../../store/selectors/columns';
 import { getConstraints, getConstraintsStatus } from '../../store/selectors/constaints';
 import { getCurrent, getSetCurrentSchemaStatus } from '../../store/selectors/schemas';
 import { getTables, getTablesStatus } from '../../store/selectors/tables';
 import Status from '../status/Status';
-import Table from '../table/Table';
 import SvgMap from './SvgMap';
 
 const SchemaMap: React.FC = () => {
@@ -47,7 +45,6 @@ const SchemaMap: React.FC = () => {
   return (
     <div className="schema-map">
       {allStatus}
-      <br/>
       {canRenderSvg && 
         <SvgMap
           tables={tables}

@@ -61,7 +61,7 @@ function draw(
       return compare(t1.table_name, t2.table_name);
     });
 
-    const svgW = window.innerWidth - 20;
+    const svgW = Math.max(800, window.innerWidth - 300);
 
     let cursorX = 0, cursorY = 0, cursorH = 0;
     const tableNameToColumnsMap: SMap<ColumnItem[]> = groupBy<ColumnItem, ColumnItem>(columns, column => column.table_name);
@@ -198,37 +198,6 @@ function draw(
       return `${d.column_name} [ ${conTypeStr.toUpperCase()} ] ${fkeyStrs.join(',')}` 
     });
     
-    // const gColumnInner = gColumnOuter
-    // .selectAll('g.g-column-inner')
-    // .data(tablesData)
-    // .join('g')
-    // .classed("g-column-inner", true)
-    // .attr('x', d => d.x)
-    // .attr('y', d => d.y + ch)
-    // .attr("width", cw)
-    // .attr("height", ch);
-
-    // d3.select(svg).append("rect")
-    // .attr("x", 0)
-    // .attr("y", 0)
-    // .attr("width", cw)
-    // .attr("height", 25)
-    // ;
-    // d3.select(svg).append("text").text("flyway_schema_history")
-    // .attr("x", cw/2)
-    // .attr("y", 20)
-    // .attr("font-size", 15)
-    // .attr("fill", "red")
-    // .attr("text-anchor", "middle")
-    // ;
-  
-    // d3.select(svg)
-    // .append("rect")
-    // .attr("x", 0)
-    // .attr("y", 0)
-    // .attr("height", 10)
-    // .attr("width", 50);
-
   }
 
 const SvgMap: React.FC<Props> = ({tables, columns, constraints}) => {

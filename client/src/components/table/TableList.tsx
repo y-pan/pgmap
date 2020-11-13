@@ -4,10 +4,10 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import { useDispatch, useSelector } from 'react-redux';
-import { getCurrent } from '../../store/selectors/schemas';
-import { getTables, getTablesStatus } from '../../store/selectors/tables';
+import { getFocusTable, getTables, getTablesStatus } from '../../store/selectors/tables';
 import { LoadingStatus } from '../../store/reducers/types';
 import { TableItem } from '../../api/type';
+import { setFocusTableSaga } from '../../store/actions/tables';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
@@ -20,19 +20,15 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export default function SelectedListItem() {
   const dispatch = useDispatch();
-  const currentSchema = useSelector(getCurrent);
   const tables = useSelector(getTables);
   const tablesStatus = useSelector(getTablesStatus);
-  const currentTable = 'address' as any;
-  
+  const focusTable = useSelector(getFocusTable);
   const classes = useStyles();
-  // const [selectedIndex, setSelectedIndex] = React.useState(1);
-
 
   const onClickTable = (
     table: TableItem,
   ) => {
-    // setSelectedIndex(index);
+    dispatch(setFocusTableSaga(table));
   };
 
   if (tablesStatus === LoadingStatus.INITIAL) {
@@ -60,7 +56,7 @@ export default function SelectedListItem() {
           key={index}
           button
           dense
-          selected={table == currentTable}
+          selected={table.table_name === focusTable?.table_name}
           onClick={() => onClickTable(table)}>
           <ListItemText primary={table.table_name}/>
       </ListItem>

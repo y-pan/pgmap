@@ -37,7 +37,7 @@ const SchemaList: React.FC = () => {
   }
 
   return (
-    <Breadcrumbs aria-label="breadcrumb" itemsBeforeCollapse={10}>
+    <Breadcrumbs aria-label="breadcrumb" itemsBeforeCollapse={10} maxItems={20}>
       {listItems}
     </Breadcrumbs>
   )

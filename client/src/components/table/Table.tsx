@@ -6,6 +6,7 @@ interface Props {
   columns?: ColumnItem[];
 }
 
+// deprecated!!!
 const Table: React.FC<Props> = ({name, columns}) => {
   const columnComps = columns?.sort(item => item.ordinal_position)
   .map(item => <tr key={item.ordinal_position}><td>{item.column_name}</td></tr>);

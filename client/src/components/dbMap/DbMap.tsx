@@ -12,14 +12,18 @@ const DbMap: React.FC<Props> = (props) => {
         <div style={{margin: 10}}>
             <SchemasList />
             <table>
+                <thead>
                 <tr>
                     <th>Table List</th>
                     <th>Table Details</th>
                 </tr>
+                </thead>
+                <tbody>
                 <tr>
                     <td><TableList /></td>
                     <td><SchemaMap /></td>
                 </tr>
+                </tbody>
             </table>
         </div>
     )

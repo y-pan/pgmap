@@ -55,3 +55,18 @@ export const {
     unsetFocusTableFailed,
   ],
 } = actionTypesCreatorsOf<TableItem>(NAMESPACE, "unsetFocusTable");
+
+export const {
+  types: [
+    setQueryActionSaga,
+    setQueryActionRequested,
+    setQueryActionSucceeded,
+    setQueryActionFailed,
+  ],
+  creators: [
+    setQuerySaga,
+    setQueryRequested,
+    setQuerySucceeded,
+    setQueryFailed,
+  ],
+} = actionTypesCreatorsOf<string>(NAMESPACE, "setQuery");

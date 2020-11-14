@@ -1,12 +1,12 @@
 import React from 'react';
 import { ColumnItem, ConstraintItem, ConstraintTypes, TableItem, TableTypes } from '../../api/type';
 import * as d3 from 'd3';
-import { compare, groupBy, SMap, toDistinctMap } from '../../api/Utils';
-import { dispatch } from 'd3';
-import { setFocusTableSaga } from '../../store/actions/tables';
+import { groupBy, SMap, toDistinctMap } from '../../api/Utils';
+import { setFocusTableSaga, setQuerySucceeded } from '../../store/actions/tables';
 import { useDispatch } from 'react-redux';
 
 interface Props {
+  schema: string,
   focusTable?: string;
   tables: TableItem[];
   columns: ColumnItem[];
@@ -46,15 +46,19 @@ interface ColumnDrawData extends ColumnItem, XY, WH {
 interface ConstraintDrawData extends ConstraintItem {
   // connect all column points when hover/double-click   
   // constraint need to know where column(s) located, for
+  columns_name: string[];
+  ref_columns_name: string[];
 }
 
 function draw(
   svgDom: SVGElement, 
+  schema: string,
   focusTable: string | undefined,
   tables: TableItem[], 
   columns: ColumnItem[], 
   constraints: ConstraintItem[],
-  setFocusTable: (table: string) => any) { 
+  setFocusTable: (table: string) => any,
+  setQuery: (query: string) => void) { 
     if (!svgDom || !tables || !columns) {
       console.warn("Cannot draw!");
       return;
@@ -130,6 +134,52 @@ function draw(
       td => ({x: td.x, y: td.y})
     );
     
+    // focusTable, targetTables, 
+    function columnOrdinalsToNames(table: string, oridnals: number[]): string[] {
+      if (!table || !oridnals || oridnals.length === 0) return [];
+      const tableColumns = tableNameToColumnsMap[table];
+      if (!tableColumns) return [];
+      return oridnals.map(ord => {
+        const cc = tableColumns.find(c => c.ordinal_position === ord);
+        return cc ? cc.column_name : ""
+      })
+    }
+
+    function joinSubfix(tableA: string, columnsA: string[], tableB: string, columnsB: string[]): string {
+      let query = '';
+      for (let i = 0; i < columnsA.length; i++) {
+        if (query) query += " AND "
+        query += `${tableA}.${columnsA[i]} = ${tableB}.${columnsB[i]}`
+      }
+      return query || ''
+    }
+
+    function friendship(): {query: string, friendshipData: ConstraintDrawData[] } {
+      if (!focusTable) return {query: "", friendshipData: []};
+      const targetContraints = tableNameToConstraintsMap[focusTable];
+      if (!targetContraints || targetContraints.length === 0) return {query: "", friendshipData: []};
+      let foreignKeys = targetContraints.filter(con => con.constraint_type === ConstraintTypes.FOREIGN_KEY);
+      if (!foreignKeys || foreignKeys.length === 0) return {query: "", friendshipData: []};
+      const foreignKeysData: ConstraintDrawData[]  = foreignKeys.map(fk => ({
+        ...fk, 
+        columns_name: columnOrdinalsToNames(fk.table_name as string, fk.columns_index as number[]),
+        ref_columns_name: columnOrdinalsToNames(fk.ref_table_name as string, fk.ref_columns_index as number[])
+      }))
+
+      let selectQuery = `select * from ${schema}.${focusTable} ${focusTable}`;
+      let joinQueries = foreignKeysData.reduce((result, fk) => {
+        let subfix = joinSubfix(fk.table_name, fk.columns_name, fk.ref_table_name as string, fk.ref_columns_name);
+        let joinQuery = subfix ? `
+        join ${schema}.${fk.ref_table_name} ${fk.ref_table_name} on ${subfix}` : "";
+        return result += joinQuery
+      }, "")
+      const fullQuery = `${selectQuery}${joinQueries}`;
+      return  {query: fullQuery, friendshipData: foreignKeysData};
+    }
+
+    const {query, friendshipData} = friendship();
+    setQuery(query); // display query outside svg
+
     // draw
     const svg = d3.select(svgDom)
     .attr("width", svgW)
@@ -141,6 +191,7 @@ function draw(
     // tables
     const gTable = svg.append('g')
     .classed("g-table", true);
+
     // - tables: boxs
     gTable.selectAll('rect.table')
     .data(tablesData) //, function(d) {return (d as any).name;})
@@ -239,18 +290,20 @@ function draw(
     
   }
 
-const SvgMap: React.FC<Props> = ({focusTable, tables, columns, constraints}) => {
+const SvgMap: React.FC<Props> = ({schema, focusTable, tables, columns, constraints}) => {
   const dispatch = useDispatch();
-
+  
   return <svg 
     className="schema-svg-map" 
     ref={ref => ref && draw(
       ref, 
+      schema,
       focusTable, 
       tables, 
       columns, 
       constraints, 
-      table => dispatch(setFocusTableSaga(table))
+      table => dispatch(setFocusTableSaga(table)),
+      query => dispatch(setQuerySucceeded(query))
       )}
   />
 }

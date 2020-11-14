@@ -49,6 +49,7 @@ const SchemaMap: React.FC = () => {
       {allStatus}
       {canRenderSvg && 
         <SvgMap
+          schema={currentSchema as string}
           focusTable={focusTable}
           tables={tables}
           columns={columns} 

@@ -466,3 +466,1153 @@ Server is running on port: 8001
   ORDER BY 
     rel.relname asc, con.contype desc
   
+Server is running on port: 8001
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'public'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'public' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'public' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'pg_catalog'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'pg_catalog' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'pg_catalog' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'public'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'public' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'public' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'information_schema'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'information_schema' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'information_schema' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'public'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'public' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'public' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'public'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'public' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'public' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'public'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'public' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'public' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'public'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'public' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'public' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'public'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'public' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'public' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'public'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'public' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'public' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'public'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'public' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'public' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'public'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'public' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'public' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'public'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'public' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'public' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'public'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'public' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'public' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'public'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'public' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'public' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'public'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'public' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'public' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'public'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'public' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'public' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'public'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'public' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'public' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'public'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'public' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'public' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'public'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'public' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'public' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'public'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'public' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'public' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'public'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'public' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'public' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT schema_name
+  FROM information_schema.schemata
+  
+[query]:
+
+  SELECT 
+    table_schema,
+    table_name,
+    table_type
+  FROM information_schema.tables 
+  WHERE table_schema = 'public'
+  order by table_type, table_name
+  
+[query]:
+
+  SELECT 
+  table_schema,
+  table_name,
+  column_name, 
+  ordinal_position
+  FROM information_schema.columns 
+   WHERE  table_schema = 'public' 
+  
+[query]:
+
+  SELECT
+    rel.relname AS table_name, 
+    -- rel.oid AS table_id, 
+    con.conname AS constraint, 
+    -- con.confrelid AS ref_Table_id, 
+    (SELECT rel2.relname 
+      FROM pg_catalog.pg_class rel2 
+      WHERE rel2.oid = con.confrelid) AS ref_table_name,
+    con.contype AS constraint_type,
+    con.conkey AS columns_index, 
+    con.confkey AS ref_columns_index
+  FROM 
+    pg_catalog.pg_constraint con
+    INNER JOIN pg_catalog.pg_class rel
+                ON rel.oid = con.conrelid
+    INNER JOIN pg_catalog.pg_namespace nsp
+                  ON nsp.oid = connamespace
+   WHERE  nsp.nspname = 'public' 
+  ORDER BY 
+    rel.relname asc, con.contype desc
+  

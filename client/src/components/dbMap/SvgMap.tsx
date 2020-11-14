@@ -119,7 +119,7 @@ function draw(
       } else {
         // new line
         cursorX = 0;
-        cursorY += Math.max(cursorH, h) + tableVSpace;
+        cursorY += cursorH + tableVSpace;
         cursorH = h;
         tablesData.push(
           {name: tableItem.table_name, type: tableItem.table_type, columns: tableCols, x: cursorX, y: cursorY, w, h}

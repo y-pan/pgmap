@@ -239,18 +239,39 @@ export function friendship(
 }
 const COLUMN_TEXT_MARGIN_LEFT: number = 10;
 
+export function indexColumnItems(columns: ColumnItem[]): ColumnItem[] {
+  if (!columns) return columns;
+  return (
+    columns
+      // .sort(col => col.ordinal_position)  // no sort, assuming backend already sorted by ordinal_position
+      .map((col, index) => ({ ...col, index }))
+  );
+}
+
+export function indexColumnItemsMap(
+  table2Columns: SMap<ColumnItem[]>
+): SMap<ColumnItem[]> {
+  if (!table2Columns) return table2Columns;
+  let newMap = {};
+  for (let key in table2Columns) {
+    let columnItems: ColumnItem[] = table2Columns[key];
+    newMap[key] = indexColumnItems(columnItems);
+  }
+  return newMap;
+}
+
 export function enrichColumnData(
-  columns: ColumnItem[], // Would be faster to only have columns to display, not all. But either will work.
   table2Columns: SMap<ColumnItem[]>,
   table2TablePos: SMap<XY>,
   table2Constraints: SMap<ConstraintItem[]>
 ): ColumnItemExtended[] {
-  const columnsExtended: ColumnItemExtended[] = columns
+  const columnsExtended: ColumnItemExtended[] = Object.values(table2Columns)
+    .flat()
     .filter((col) => !!table2TablePos[col.table_name])
     .map((col) => {
       const tablePos: XY = table2TablePos[col.table_name];
       const x = tablePos.x + COLUMN_TEXT_MARGIN_LEFT;
-      const y = tablePos.y + col.ordinal_position * FONT_HEIGHT; // tricky
+      const y = tablePos.y + (col.index + 1) * FONT_HEIGHT; // tricky
       let text: string = col.column_name;
       const colConstraints: ConstraintItem[] =
         table2Constraints[col.table_name];
@@ -268,7 +289,7 @@ export function enrichColumnData(
               const refColOrdinals = constr.ref_columns_index; // The is actually the ordinal_position, 1-base
               const refColItems: ColumnItem[] = table2Columns[refTable]; // Ordered by ordinal already. To improve effeciency
               const refColNamesStr: string = refColOrdinals
-                .map((ordinalPos) => refColItems[ordinalPos - 1].column_name)
+                .map((ordinalPos, index) => refColItems[index].column_name)
                 .join(",");
               fkeyStrs.push(`${refTable}.${refColNamesStr}`);
             }

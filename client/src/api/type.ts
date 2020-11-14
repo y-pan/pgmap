@@ -17,6 +17,9 @@ interface hasColumnName {
   column_name: string;
 }
 
+interface HasIndex {
+  index?: number;
+}
 export enum TableTypes {
   BASE_TABLE = "BASE TABLE",
   VIEW = "VIEW",
@@ -29,8 +32,11 @@ export interface TableItem extends hasTableSchema, hasTableName {
 export interface ColumnItem
   extends hasTableSchema,
     hasTableName,
-    hasColumnName {
-  ordinal_position: number;
+    hasColumnName,
+    HasIndex {
+  ordinal_position: number; // ordinal_position (1-base) is needed to match foreign key column (stored using ordinal_position) to column name
+  // but oridinal_position is not enough for UI display, as gap may exist in ordinal_position.
+  // So the index (0-base) is added, frontend only;
 }
 
 export interface ConstraintItem {

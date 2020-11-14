@@ -4,7 +4,7 @@ import * as d3 from 'd3';
 import { groupBy, MappingStrategy, SMap, toDistinctMap } from '../../api/Utils';
 import { setFocusTableSaga, setQuerySucceeded } from '../../store/actions/tables';
 import { useDispatch } from 'react-redux';
-import { ColumnItemExtended, enrichColumnData, EnrichedTableData, enrichTableData, friendship, getTableAndFriends, TableItemExtended, XY } from './DataUtil';
+import { ColumnItemExtended, enrichColumnData, EnrichedTableData, enrichTableData, friendship, getTableAndFriends, indexColumnItemsMap, TableItemExtended, XY } from './DataUtil';
 
 interface Props {
   schema: string,
@@ -40,7 +40,11 @@ function draw(
       constraints, 
       constraint => constraint.table_name
     );
-    const table2Columns: SMap<ColumnItem[]> = groupBy<ColumnItem, ColumnItem>(columns, column => column.table_name);
+    const table2Columns: SMap<ColumnItem[]> = indexColumnItemsMap(
+      groupBy<ColumnItem, ColumnItem>(columns, column => column.table_name)
+    );
+
+    // There might be some gap in ordinal_position number might be missing. We need to actual index
     const filteredTables: TableItem[] = focusTable ? getTableAndFriends(focusTable, tables, table2Constraints[focusTable]) : tables;
     const tableDrawData: EnrichedTableData = enrichTableData(filteredTables, table2Columns, TABLE_HSPACE, TABLE_VSPACE, svgW);
     const table2TablePos: SMap<XY> = toDistinctMap<TableItemExtended, XY>(
@@ -53,7 +57,7 @@ function draw(
     const friendshipData = friendship(schema, focusTable, table2Constraints[focusTable], table2Columns);
 
     // columns
-    const enrichedColumnData: ColumnItemExtended[] = enrichColumnData(columns, table2Columns, table2TablePos, table2Constraints);
+    const enrichedColumnData: ColumnItemExtended[] = enrichColumnData(table2Columns, table2TablePos, table2Constraints);
     
     let selectJoinQuery = friendshipData.query;
     if (!selectJoinQuery) {

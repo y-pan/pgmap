@@ -1,7 +1,7 @@
 import React from 'react';
 import { ColumnItem, ConstraintItem, ConstraintTypes, TableItem, TableTypes } from '../../api/type';
 import * as d3 from 'd3';
-import { groupBy, SMap, toDistinctMap } from '../../api/Utils';
+import { groupBy, SMap, tableAlias, toDistinctMap } from '../../api/Utils';
 import { setFocusTableSaga, setQuerySucceeded } from '../../store/actions/tables';
 import { useDispatch } from 'react-redux';
 
@@ -166,11 +166,11 @@ function draw(
         ref_columns_name: columnOrdinalsToNames(fk.ref_table_name as string, fk.ref_columns_index as number[])
       }))
 
-      let selectQuery = `select * from ${schema}.${focusTable} ${focusTable}`;
+      let selectQuery = `select * from ${schema}.${focusTable} ${tableAlias(focusTable)}`;
       let joinQueries = foreignKeysData.reduce((result, fk) => {
-        let subfix = joinSubfix(fk.table_name, fk.columns_name, fk.ref_table_name as string, fk.ref_columns_name);
+        let subfix = joinSubfix(tableAlias(fk.table_name), fk.columns_name, tableAlias(fk.ref_table_name as string), fk.ref_columns_name);
         let joinQuery = subfix ? `
-        join ${schema}.${fk.ref_table_name} ${fk.ref_table_name} on ${subfix}` : "";
+        join ${schema}.${fk.ref_table_name} ${tableAlias(fk.ref_table_name as string)} on ${subfix}` : "";
         return result += joinQuery
       }, "")
       const fullQuery = `${selectQuery}${joinQueries}`;

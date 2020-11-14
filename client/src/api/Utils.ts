@@ -52,3 +52,7 @@ export function compare<T>(v1: T, v2: T): number {
   if (v1 > v2) return 1;
   return 0;
 }
+
+export function tableAlias(table: string): string {
+  return `${table}0`;
+}

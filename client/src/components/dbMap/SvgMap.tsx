@@ -4,7 +4,7 @@ import * as d3 from 'd3';
 import { groupBy, MappingStrategy, SMap, toDistinctMap } from '../../api/Utils';
 import { setFocusTableSaga, setQuerySucceeded } from '../../store/actions/tables';
 import { useDispatch } from 'react-redux';
-import { EnrichedTableData, enrichTableData, friendship, getTableAndFriends, TableDrawData, XY } from './DataUtil';
+import { ColumnItemExtended, enrichColumnData, EnrichedTableData, enrichTableData, friendship, getTableAndFriends, TableItemExtended, XY } from './DataUtil';
 
 interface Props {
   schema: string,
@@ -14,8 +14,9 @@ interface Props {
   constraints: ConstraintItem[];
 }
 
-export const FONT_SIZE = 15; // For "flyway_schema_history" FONT_SIZE 15 -> 116px w * 18px h
-export const CELL_HEIGHT = 20; // cell height 
+// export const FONT_SIZE = 15; // For "flyway_schema_history" FONT_SIZE 15 -> 116px w * 18px h
+export const FONT_HEIGHT = 18; // magic number !
+export const CELL_HEIGHT = 25; // cell height 
 export const CELL_WIDTH = 500; // cell width 
 export const TABLE_VSPACE = 15, TABLE_HSPACE = 15;
 
@@ -42,7 +43,7 @@ function draw(
     const table2Columns: SMap<ColumnItem[]> = groupBy<ColumnItem, ColumnItem>(columns, column => column.table_name);
     const filteredTables: TableItem[] = focusTable ? getTableAndFriends(focusTable, tables, table2Constraints[focusTable]) : tables;
     const tableDrawData: EnrichedTableData = enrichTableData(filteredTables, table2Columns, TABLE_HSPACE, TABLE_VSPACE, svgW);
-    const table2TablePos: SMap<XY> = toDistinctMap<TableDrawData, XY>(
+    const table2TablePos: SMap<XY> = toDistinctMap<TableItemExtended, XY>(
       tableDrawData.data, 
       td => td.name, 
       td => ({x: td.x, y: td.y}),
@@ -50,6 +51,10 @@ function draw(
     );
 
     const friendshipData = friendship(schema, focusTable, table2Constraints[focusTable], table2Columns);
+
+    // columns
+    const enrichedColumnData: ColumnItemExtended[] = enrichColumnData(columns, table2Columns, table2TablePos, table2Constraints);
+    
     let selectJoinQuery = friendshipData.query;
     if (!selectJoinQuery) {
       selectJoinQuery = focusTable ? `SELECT * FROM ${schema}.${focusTable}` : '';
@@ -59,7 +64,7 @@ function draw(
 
     // draw
     const svg = d3.select(svgDom)
-    .attr("width", svgW)
+    .attr("width", tableDrawData.drawAreaWidth)
     .attr("height", tableDrawData.drawAreaHeight);
 
     // Clean up everything. 
@@ -109,7 +114,7 @@ function draw(
     .classed('table-view', d => d.type === TableTypes.VIEW)
     .classed('table-focus', d => d.name === focusTable)
     .attr('x', d => d.x + CELL_WIDTH/2)
-    .attr('y', d => d.y + FONT_SIZE)
+    .attr('y', d => d.y + FONT_HEIGHT)
     .text(d => `${d.name} [${table2Columns[d.name].length}]`)
     .on("click", function(event, d) {
       event.stopPropagation();
@@ -118,53 +123,17 @@ function draw(
       }
     });
 
-    // columns
     const gColumnOuter = svg.append('g')
     .classed("g-column-outer", true)
     .attr('transform', `translate(0, ${CELL_HEIGHT})`);
 
     gColumnOuter.selectAll("text.column-name")
-    .data(columns)
+    .data(enrichedColumnData)
     .join('text')
     .classed('column-name', true)
-    .attr('x', d => {
-      const xy: XY = table2TablePos[d.table_name];
-      if (!xy) {
-        return -1000; //0 + CELL_WIDTH / 2;
-      }
-      return xy.x + CELL_WIDTH / 2;
-    })
-    .attr('y', (d, index) => {
-      const xy: XY = table2TablePos[d.table_name]
-      if (!xy) {
-        return -1000;
-      }
-      return xy.y + d.ordinal_position * FONT_SIZE;
-    })
-    .text(d => {
-      const colConstrs: ConstraintItem[] = table2Constraints[d.table_name];
-      if (!colConstrs || colConstrs.length === 0) return d.column_name;
-      // get all constraints
-      let conTyps = [];
-      let fkeyStrs = []; // 
-      for (let con of colConstrs) {
-        let indexes = con.columns_index;
-        if (indexes && indexes.includes(d.ordinal_position)) {
-          conTyps.push(con.constraint_type);
-          if (con.constraint_type === ConstraintTypes.FOREIGN_KEY) {
-            const refTable = con.ref_table_name;
-            const refCols = con.ref_columns_index;
-            const refColItems = table2Columns[refTable]; // ordered by ordinal 
-            const refColNames = refCols.map(ordinal => refColItems[ordinal-1].column_name).join(",");
-            fkeyStrs.push(`${refTable}.${refColNames}`);
-          }
-        } 
-      }
-      if (conTyps.length === 0) return d.column_name;
-      let conTypeStr = conTyps.join(",");
-      return `${d.column_name} [ ${conTypeStr.toUpperCase()} ] ${fkeyStrs.join(',')}` 
-    });
-    
+    .attr('x', d => d.x)
+    .attr('y', d => d.y)
+    .text(d => d.text);
   }
 
 const SvgMap: React.FC<Props> = ({schema, focusTable, tables, columns, constraints}) => {

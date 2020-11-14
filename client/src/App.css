@@ -85,6 +85,9 @@ text.table-name {
   font-weight: bold;
   cursor: pointer;
 }
+text.column-name {
+  text-anchor: start;
+}
 
 rect.table-view {
   /* View type*/

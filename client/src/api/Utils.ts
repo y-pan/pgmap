@@ -16,6 +16,11 @@ export interface SMap<T> {
   [key: string]: T;
 }
 
+/**
+ *
+ * @sumary group array by key, extracted by keyExtractor.
+ * Use valExtractor to extract new shape of item if provided, default to use original item.
+ */
 export function groupBy<T, V>(
   array: T[],
   keyExtractor: (item: T) => string,

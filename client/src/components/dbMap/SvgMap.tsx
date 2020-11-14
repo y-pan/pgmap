@@ -4,6 +4,7 @@ import * as d3 from 'd3';
 import { groupBy, SMap, toDistinctMap } from '../../api/Utils';
 import { setFocusTableSaga, setQuerySucceeded } from '../../store/actions/tables';
 import { useDispatch } from 'react-redux';
+import { ConstraintDrawData, EnrichedTableData, enrichTableData, getTableAndFriends, TableDrawData, XY } from './DataUtil';
 
 interface Props {
   schema: string,
@@ -13,42 +14,10 @@ interface Props {
   constraints: ConstraintItem[];
 }
 
-const fontSize = 15; // For "flyway_schema_history" fontSize 15 -> 116px w * 18px h
-const ch = 20; // cell height 
-const cw = 500; // cell width 
-const tableVSpace = 15, tableHSpace = 15;
-
-interface XY {
-  x: number;
-  y: number;
-}
-
-interface WH {
-  w: number;
-  h: number;
-}
-
-interface TableDrawData extends XY, WH {
-  type: TableTypes;
-  name: string;
-  columns: ColumnItem[]; // columns of the table
-}
-
-/** @summary returns array of [w, h] */
-function tableSize(size: number): {w: number, h: number} {
-  return { w: cw, h: ch * size + 1}; // 1 is for table_name itself
-}
-
-interface ColumnDrawData extends ColumnItem, XY, WH {
-  // column need to know its constraint type(s)
-}
-
-interface ConstraintDrawData extends ConstraintItem {
-  // connect all column points when hover/double-click   
-  // constraint need to know where column(s) located, for
-  columns_name: string[];
-  ref_columns_name: string[];
-}
+export const FONT_SIZE = 15; // For "flyway_schema_history" FONT_SIZE 15 -> 116px w * 18px h
+export const CELL_HEIGHT = 20; // cell height 
+export const CELL_WIDTH = 500; // cell width 
+export const TABLE_VSPACE = 15, TABLE_HSPACE = 15;
 
 function draw(
   svgDom: SVGElement, 
@@ -65,79 +34,28 @@ function draw(
     }
     const svgW = Math.max(800, window.innerWidth - 300);
 
-    // ********* prepare data *************
-    // sort by type asc, name asc, backend already sorted nicely
-    // tables.sort((t1, t2) => {
-    //   let compType = compare(t1.table_type, t2.table_type);
-    //   if (compType !== 0) return compType;
-    //   return compare(t1.table_name, t2.table_name);
-    // });
-    
-    const tableNameToConstraintsMap: SMap<ConstraintItem[]> = groupBy<ConstraintItem, ConstraintItem>(
+    // maps: table2Constraints, table2Columns, table2TablePos, table2
+    const table2Constraints: SMap<ConstraintItem[]> = groupBy<ConstraintItem, ConstraintItem>(
       constraints, 
       constraint => constraint.table_name
-      // constraint => constraint.
-      );
+    );
+    const table2Columns: SMap<ColumnItem[]> = groupBy<ColumnItem, ColumnItem>(columns, column => column.table_name);
 
-    let targetTables: TableItem[] = [];
-    if (!focusTable) {
-      targetTables = tables;
-    } else {
-      // only display on tables having relationship with the "focusTable"
+    const filteredTables: TableItem[] = focusTable ? getTableAndFriends(focusTable, tables, table2Constraints[focusTable]) : tables;
+    
+    // enrich tableData, as TableDrawData
+    const tableDrawData: EnrichedTableData = enrichTableData(filteredTables, table2Columns, TABLE_HSPACE, TABLE_VSPACE, svgW);
 
-      const refTables: Set<string> = new Set();
-      const focusConstrs = tableNameToConstraintsMap[focusTable];
-      for (let constr of focusConstrs) {
-        constr.ref_table_name && refTables.add(constr.ref_table_name);
-      }
-      
-      for (let table of tables) {
-        if (table.table_name === focusTable) {
-          targetTables.unshift(table);
-        }
-        if (refTables.has(table.table_name)) {
-          targetTables.push(table);
-        }
-      }
-      
-    }
-
-    let cursorX = 0, cursorY = 0, cursorH = 0;
-    const tableNameToColumnsMap: SMap<ColumnItem[]> = groupBy<ColumnItem, ColumnItem>(columns, column => column.table_name);
-    const tablesData: TableDrawData[] = [];
-    for (let tableItem of targetTables) {
-      const tableCols = tableNameToColumnsMap[tableItem.table_name];
-      const {w, h} = tableSize(tableCols.length);
-      
-      if (cursorX + w < svgW) {
-        // keep append table to the right, on same row
-        tablesData.push(
-          {name: tableItem.table_name, type: tableItem.table_type, columns: tableCols, x: cursorX, y: cursorY, w, h}
-        );
-        cursorX = cursorX + w + tableHSpace;
-        cursorH = Math.max(cursorH, h);
-      } else {
-        // new line
-        cursorX = 0;
-        cursorY += cursorH + tableVSpace;
-        cursorH = h;
-        tablesData.push(
-          {name: tableItem.table_name, type: tableItem.table_type, columns: tableCols, x: cursorX, y: cursorY, w, h}
-        )
-        cursorX += w + tableHSpace;
-      }
-    }
-
-    const tableNameToXYMap: SMap<XY> = toDistinctMap<TableDrawData, XY>(
-      tablesData, 
+    const table2TablePos: SMap<XY> = toDistinctMap<TableDrawData, XY>(
+      tableDrawData.data, 
       td => td.name, 
       td => ({x: td.x, y: td.y})
     );
     
-    // focusTable, targetTables, 
+    // focusTable, filteredTables, 
     function columnOrdinalsToNames(table: string, oridnals: number[]): string[] {
       if (!table || !oridnals || oridnals.length === 0) return [];
-      const tableColumns = tableNameToColumnsMap[table];
+      const tableColumns = table2Columns[table];
       if (!tableColumns) return [];
       return oridnals.map(ord => {
         const cc = tableColumns.find(c => c.ordinal_position === ord);
@@ -156,7 +74,7 @@ function draw(
 
     function friendship(): {query: string, friendshipData: ConstraintDrawData[] } {
       if (!focusTable) return {query: "", friendshipData: []};
-      const targetContraints = tableNameToConstraintsMap[focusTable];
+      const targetContraints = table2Constraints[focusTable];
       if (!targetContraints || targetContraints.length === 0) return {query: "", friendshipData: []};
       let foreignKeys = targetContraints.filter(con => con.constraint_type === ConstraintTypes.FOREIGN_KEY);
       if (!foreignKeys || foreignKeys.length === 0) return {query: "", friendshipData: []};
@@ -186,7 +104,7 @@ function draw(
 
     let {query, friendshipData} = friendship();
     if (!query) {
-      query = `select * from ${schema}.${focusTable}`;
+      query = focusTable ? `select * from ${schema}.${focusTable}` : '';
     }
 
     setQuery(query); // display query outside svg
@@ -194,7 +112,7 @@ function draw(
     // draw
     const svg = d3.select(svgDom)
     .attr("width", svgW)
-    .attr("height", cursorY + cursorH);
+    .attr("height", tableDrawData.drawAreaHeight);
 
     // Clean up everything. 
     svg.selectAll('g').remove();
@@ -205,7 +123,7 @@ function draw(
 
     // - tables: boxs
     gTable.selectAll('rect.table')
-    .data(tablesData) //, function(d) {return (d as any).name;})
+    .data(tableDrawData.data) //, function(d) {return (d as any).name;})
     .enter().append('rect')
     // .join('rect')
     .classed("table", true)
@@ -219,7 +137,7 @@ function draw(
     // - table: names
     gTable
     .selectAll('rect.table-name')
-    .data(tablesData) //, function(d) {return (d as any).name;})
+    .data(tableDrawData.data) //, function(d) {return (d as any).name;})
     .join('rect')
     .classed("table-name", true)
     .classed('table-view', d => d.type === TableTypes.VIEW)
@@ -227,7 +145,7 @@ function draw(
     .attr('x', d => d.x)
     .attr('y', d => d.y)
     .attr('width', d => d.w)
-    .attr('height', ch)
+    .attr('height', CELL_HEIGHT)
     .on("click", function(event, d) {
       event.stopPropagation();
       if (focusTable !== d.name) {
@@ -237,13 +155,13 @@ function draw(
 
     gTable
     .selectAll('text.table-name')
-    .data(tablesData) //, function(d) {return (d as any).name;})
+    .data(tableDrawData.data) //, function(d) {return (d as any).name;})
     .join('text')
     .classed("table-name", true)
     .classed('table-view', d => d.type === TableTypes.VIEW)
     .classed('table-focus', d => d.name === focusTable)
-    .attr('x', d => d.x + cw/2)
-    .attr('y', d => d.y + fontSize)
+    .attr('x', d => d.x + CELL_WIDTH/2)
+    .attr('y', d => d.y + FONT_SIZE)
     .text(d => d.name)
     .on("click", function(event, d) {
       event.stopPropagation();
@@ -255,28 +173,28 @@ function draw(
     // columns
     const gColumnOuter = svg.append('g')
     .classed("g-column-outer", true)
-    .attr('transform', `translate(0, ${ch})`);
+    .attr('transform', `translate(0, ${CELL_HEIGHT})`);
 
     gColumnOuter.selectAll("text.column-name")
     .data(columns)
     .join('text')
     .classed('column-name', true)
     .attr('x', d => {
-      const xy: XY = tableNameToXYMap[d.table_name];
+      const xy: XY = table2TablePos[d.table_name];
       if (!xy) {
-        return -1000; //0 + cw / 2;
+        return -1000; //0 + CELL_WIDTH / 2;
       }
-      return xy.x + cw / 2;
+      return xy.x + CELL_WIDTH / 2;
     })
     .attr('y', (d, index) => {
-      const xy: XY = tableNameToXYMap[d.table_name]
+      const xy: XY = table2TablePos[d.table_name]
       if (!xy) {
         return -1000;
       }
-      return xy.y + d.ordinal_position * fontSize;
+      return xy.y + d.ordinal_position * FONT_SIZE;
     })
     .text(d => {
-      const colConstrs: ConstraintItem[] = tableNameToConstraintsMap[d.table_name];
+      const colConstrs: ConstraintItem[] = table2Constraints[d.table_name];
       if (!colConstrs || colConstrs.length === 0) return d.column_name;
       // get all constraints
       let conTyps = [];
@@ -288,7 +206,7 @@ function draw(
           if (con.constraint_type === ConstraintTypes.FOREIGN_KEY) {
             const refTable = con.ref_table_name as string;
             const refCols = con.ref_columns_index as number[];
-            const refColItems = tableNameToColumnsMap[refTable]; // ordered by ordinal 
+            const refColItems = table2Columns[refTable]; // ordered by ordinal 
             const refColNames = refCols.map(ordinal => refColItems[ordinal-1].column_name).join(",");
             fkeyStrs.push(`${refTable}.${refColNames}`);
           }

@@ -313,7 +313,10 @@ const SvgMap: React.FC<Props> = ({schema, focusTable, tables, columns, constrain
       tables, 
       columns, 
       constraints, 
-      table => dispatch(setFocusTableSaga(table)),
+      newFocusTable => {
+        dispatch(setFocusTableSaga(newFocusTable));
+        window.scrollTo(0, 0);
+      },
       query => dispatch(setQuerySucceeded(query))
       )}
   />

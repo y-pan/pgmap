@@ -29,6 +29,7 @@ export default function SelectedListItem() {
     table: TableItem,
   ) => {
     focusTable !== table.table_name && dispatch(setFocusTableSaga(table.table_name));
+    window.scrollTo(0, 0);
   };
 
   if (tablesStatus === LoadingStatus.INITIAL) {

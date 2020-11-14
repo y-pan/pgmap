@@ -1,7 +1,7 @@
 import React from 'react';
 import { ColumnItem, ConstraintItem, ConstraintTypes, TableItem, TableTypes } from '../../api/type';
 import * as d3 from 'd3';
-import { groupBy, SMap, toDistinctMap } from '../../api/Utils';
+import { groupBy, MappingStrategy, SMap, toDistinctMap } from '../../api/Utils';
 import { setFocusTableSaga, setQuerySucceeded } from '../../store/actions/tables';
 import { useDispatch } from 'react-redux';
 import { ConstraintDrawData, EnrichedTableData, enrichTableData, getTableAndFriends, TableDrawData, XY } from './DataUtil';
@@ -40,16 +40,13 @@ function draw(
       constraint => constraint.table_name
     );
     const table2Columns: SMap<ColumnItem[]> = groupBy<ColumnItem, ColumnItem>(columns, column => column.table_name);
-
     const filteredTables: TableItem[] = focusTable ? getTableAndFriends(focusTable, tables, table2Constraints[focusTable]) : tables;
-    
-    // enrich tableData, as TableDrawData
     const tableDrawData: EnrichedTableData = enrichTableData(filteredTables, table2Columns, TABLE_HSPACE, TABLE_VSPACE, svgW);
-
     const table2TablePos: SMap<XY> = toDistinctMap<TableDrawData, XY>(
       tableDrawData.data, 
       td => td.name, 
-      td => ({x: td.x, y: td.y})
+      td => ({x: td.x, y: td.y}),
+      MappingStrategy.USE_LATEST_ON_DUPLICATE_WARNED
     );
     
     // focusTable, filteredTables, 
@@ -162,7 +159,7 @@ function draw(
     .classed('table-focus', d => d.name === focusTable)
     .attr('x', d => d.x + CELL_WIDTH/2)
     .attr('y', d => d.y + FONT_SIZE)
-    .text(d => d.name)
+    .text(d => `${d.name} [${table2Columns[d.name].length}]`)
     .on("click", function(event, d) {
       event.stopPropagation();
       if (focusTable !== d.name) {

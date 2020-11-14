@@ -39,15 +39,56 @@ export function groupBy<T, V>(
   return map;
 }
 
+export enum MappingStrategy {
+  USE_LATEST_ON_DUPLICATE = "OVERWRITE_ON_DUPLICATE",
+  USE_FIRST_ON_DUPLICATE = "USE_FIRST_ON_DUPLICATE",
+  USE_LATEST_ON_DUPLICATE_WARNED = "USE_LATEST_ON_DUPLICATE_WARNED",
+  USE_FIRST_ON_DUPLICATE_WARNED = "USE_FIRST_ON_DUPLICATE_WARNED",
+  THROW_ON_DUPLICATE = "THROW_ON_DUPLICATE",
+}
+
+/** @summary make a map out of array. Will overwrite value when seeing duplicated keys */
 export function toDistinctMap<T, V>(
   array: T[],
   keyExtrator: (item: T) => string,
-  valueExtractor: (item: T) => any
+  valueExtractor: (item: T) => V,
+  mappingStrategy: MappingStrategy
 ): SMap<V> {
   const map: SMap<V> = {};
   for (let item of array) {
     const key = keyExtrator(item);
-    map[key] = valueExtractor(item);
+    const isDuplicated = (map as Object).hasOwnProperty(key);
+    if (!isDuplicated) {
+      map[key] = valueExtractor(item);
+    } else {
+      switch (mappingStrategy) {
+        case MappingStrategy.THROW_ON_DUPLICATE:
+          throw new Error("Duplicates not allowed!");
+
+        case MappingStrategy.USE_FIRST_ON_DUPLICATE:
+          break;
+
+        case MappingStrategy.USE_FIRST_ON_DUPLICATE_WARNED:
+          console.warn(`Duplicates found for key=${key}, using first.`);
+          break;
+
+        case MappingStrategy.USE_LATEST_ON_DUPLICATE:
+          map[key] = valueExtractor(item);
+          break;
+
+        case MappingStrategy.USE_LATEST_ON_DUPLICATE_WARNED:
+          map[key] = valueExtractor(item);
+          console.warn(`Duplicates found for key=${key}, using latest.`);
+          break;
+
+        default:
+          console.warn(
+            `Unknown mapping strategy: ${mappingStrategy}, defaulted to ${MappingStrategy.USE_LATEST_ON_DUPLICATE}`
+          );
+          map[key] = valueExtractor(item);
+          break;
+      }
+    }
   }
   return map;
 }

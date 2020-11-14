@@ -4,7 +4,7 @@ import * as d3 from 'd3';
 import { groupBy, MappingStrategy, SMap, toDistinctMap } from '../../api/Utils';
 import { setFocusTableSaga, setQuerySucceeded } from '../../store/actions/tables';
 import { useDispatch } from 'react-redux';
-import { ConstraintDrawData, EnrichedTableData, enrichTableData, getTableAndFriends, TableDrawData, XY } from './DataUtil';
+import { EnrichedTableData, enrichTableData, friendship, getTableAndFriends, TableDrawData, XY } from './DataUtil';
 
 interface Props {
   schema: string,
@@ -34,7 +34,7 @@ function draw(
     }
     const svgW = Math.max(800, window.innerWidth - 300);
 
-    // maps: table2Constraints, table2Columns, table2TablePos, table2
+    // process tables, constraints, columns
     const table2Constraints: SMap<ConstraintItem[]> = groupBy<ConstraintItem, ConstraintItem>(
       constraints, 
       constraint => constraint.table_name
@@ -48,63 +48,14 @@ function draw(
       td => ({x: td.x, y: td.y}),
       MappingStrategy.USE_LATEST_ON_DUPLICATE_WARNED
     );
-    
-    // focusTable, filteredTables, 
-    function columnOrdinalsToNames(table: string, oridnals: number[]): string[] {
-      if (!table || !oridnals || oridnals.length === 0) return [];
-      const tableColumns = table2Columns[table];
-      if (!tableColumns) return [];
-      return oridnals.map(ord => {
-        const cc = tableColumns.find(c => c.ordinal_position === ord);
-        return cc ? cc.column_name : ""
-      })
+
+    const friendshipData = friendship(schema, focusTable, table2Constraints[focusTable], table2Columns);
+    let selectJoinQuery = friendshipData.query;
+    if (!selectJoinQuery) {
+      selectJoinQuery = focusTable ? `SELECT * FROM ${schema}.${focusTable}` : '';
     }
 
-    function joinSubfix(tableA: string, columnsA: string[], tableB: string, columnsB: string[]): string {
-      let query = '';
-      for (let i = 0; i < columnsA.length; i++) {
-        if (query) query += " AND "
-        query += `${tableA}.${columnsA[i]} = ${tableB}.${columnsB[i]}`
-      }
-      return query || ''
-    }
-
-    function friendship(): {query: string, friendshipData: ConstraintDrawData[] } {
-      if (!focusTable) return {query: "", friendshipData: []};
-      const targetContraints = table2Constraints[focusTable];
-      if (!targetContraints || targetContraints.length === 0) return {query: "", friendshipData: []};
-      let foreignKeys = targetContraints.filter(con => con.constraint_type === ConstraintTypes.FOREIGN_KEY);
-      if (!foreignKeys || foreignKeys.length === 0) return {query: "", friendshipData: []};
-      const foreignKeysData: ConstraintDrawData[]  = foreignKeys.map(fk => ({
-        ...fk, 
-        columns_name: columnOrdinalsToNames(fk.table_name as string, fk.columns_index as number[]),
-        ref_columns_name: columnOrdinalsToNames(fk.ref_table_name as string, fk.ref_columns_index as number[])
-      }))
-
-      const focusTableAlias = `${focusTable}0`;
-
-      let selectQuery = `select * from ${schema}.${focusTable} ${focusTableAlias}`;
-
-      let joinQueries = foreignKeysData.reduce((result, fk, i) => {
-        const rtableAlias = `${fk.ref_table_name}${i}`
-        let subfix = joinSubfix(
-          focusTableAlias, fk.columns_name, 
-          rtableAlias, fk.ref_columns_name);
-        let joinQuery = subfix ? `
-    JOIN ${schema}.${fk.ref_table_name} ${rtableAlias} on ${subfix}` : "";
-        return result += joinQuery
-      }, "");
-
-      const fullQuery = `${selectQuery}${joinQueries}`;
-      return  {query: fullQuery, friendshipData: foreignKeysData};
-    }
-
-    let {query, friendshipData} = friendship();
-    if (!query) {
-      query = focusTable ? `select * from ${schema}.${focusTable}` : '';
-    }
-
-    setQuery(query); // display query outside svg
+    setQuery(selectJoinQuery); // display query outside svg
 
     // draw
     const svg = d3.select(svgDom)
@@ -201,8 +152,8 @@ function draw(
         if (indexes && indexes.includes(d.ordinal_position)) {
           conTyps.push(con.constraint_type);
           if (con.constraint_type === ConstraintTypes.FOREIGN_KEY) {
-            const refTable = con.ref_table_name as string;
-            const refCols = con.ref_columns_index as number[];
+            const refTable = con.ref_table_name;
+            const refCols = con.ref_columns_index;
             const refColItems = table2Columns[refTable]; // ordered by ordinal 
             const refColNames = refCols.map(ordinal => refColItems[ordinal-1].column_name).join(",");
             fkeyStrs.push(`${refTable}.${refColNames}`);

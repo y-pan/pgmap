@@ -57,7 +57,7 @@ export function toDistinctMap<T, V>(
   const map: SMap<V> = {};
   for (let item of array) {
     const key = keyExtrator(item);
-    const isDuplicated = (map as Object).hasOwnProperty(key);
+    const isDuplicated = map.hasOwnProperty(key);
     if (!isDuplicated) {
       map[key] = valueExtractor(item);
     } else {

@@ -1,6 +1,7 @@
 import {
   ColumnItem,
   ConstraintItem,
+  ConstraintTypes,
   TableItem,
   TableTypes,
 } from "../../api/type";
@@ -35,8 +36,8 @@ export interface ColumnDrawData extends ColumnItem, XY, WH {
 export interface ConstraintDrawData extends ConstraintItem {
   // connect all column points when hover/double-click
   // constraint need to know where column(s) located, for
-  columns_name: string[];
-  ref_columns_name: string[];
+  columns_name: string[]; // connterpart to columns_index: number[]
+  ref_columns_name: string[]; // counterpart to ref_columns_index: number[]
 }
 
 /**
@@ -139,4 +140,96 @@ export function enrichTableData(
     drawAreaHeight: cursorY + cursorH,
     drawAreaWidth: drawAreaWdith,
   };
+}
+
+/** @summary get names array, by ordinal_position array */
+export function columnOrdinalsToNames(
+  oridnals: number[],
+  tableColumns: ColumnItem[]
+): string[] {
+  if (!oridnals || !tableColumns) return [];
+  return oridnals.map((ord) => {
+    const cc = tableColumns.find((c) => c.ordinal_position === ord);
+    return cc ? cc.column_name : "";
+  });
+}
+
+/**
+ * @summary get subfix for join state depending on how many pairs of relationship:
+ * For single pair looks like:  user.id = order.user_id
+ * For 2 pairs looks like:   user.id = order.user_id AND user.order_type = order.order_type
+ */
+export function joinQuerySubfix(
+  tableA: string,
+  columnsA: string[],
+  tableB: string,
+  columnsB: string[]
+): string {
+  let query = "";
+
+  if (!tableA || !tableB) throw new Error("Table name is missing.");
+  if (columnsA.length !== columnsB.length)
+    throw new Error("Column sizes don't match!");
+
+  for (let i = 0; i < columnsA.length; i++) {
+    if (query) query += " AND ";
+    query += `${tableA}.${columnsA[i]} = ${tableB}.${columnsB[i]}`;
+  }
+  return query || "";
+}
+
+export interface FriendShipData {
+  query: string;
+  data: ConstraintDrawData[];
+}
+
+export function friendship(
+  schema: string,
+  focusTable: string,
+  constraints: ConstraintItem[],
+  table2Columns: SMap<ColumnItem[]>
+): FriendShipData {
+  if (!schema || !focusTable || !constraints) return { query: "", data: [] };
+
+  const fkConstraints = constraints.filter(
+    (con) => con.constraint_type === ConstraintTypes.FOREIGN_KEY
+  );
+
+  if (!fkConstraints) return { query: "", data: [] };
+
+  const enrichedFkConstraints: ConstraintDrawData[] = fkConstraints.map(
+    (fk) => ({
+      ...fk,
+      columns_name: columnOrdinalsToNames(
+        fk.columns_index,
+        table2Columns[fk.table_name]
+      ),
+      ref_columns_name: columnOrdinalsToNames(
+        fk.ref_columns_index,
+        table2Columns[fk.ref_table_name]
+      ),
+    })
+  );
+
+  // use enrichedFkConstraints to generate query string
+  const focusTableAlias = `${focusTable}0`;
+  let selectQuery = `SELECT * FROM ${schema}.${focusTable} ${focusTableAlias}`;
+
+  let joinQueries: string = enrichedFkConstraints.reduce((result, fk, i) => {
+    const rtableAlias = `${fk.ref_table_name}${i}`;
+    let subfix = joinQuerySubfix(
+      focusTableAlias,
+      fk.columns_name,
+      rtableAlias,
+      fk.ref_columns_name
+    );
+    let joinQuery = subfix
+      ? `
+  JOIN ${schema}.${fk.ref_table_name} ${rtableAlias} on ${subfix}`
+      : "";
+    return (result += joinQuery);
+  }, "");
+
+  const fullQuery = `${selectQuery}${joinQueries}`;
+  return { query: fullQuery, data: enrichedFkConstraints };
 }

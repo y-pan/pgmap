@@ -1,7 +1,7 @@
 import React from 'react';
 import { ColumnItem, ConstraintItem, ConstraintTypes, TableItem, TableTypes } from '../../api/type';
 import * as d3 from 'd3';
-import { groupBy, SMap, tableAlias, toDistinctMap } from '../../api/Utils';
+import { groupBy, SMap, toDistinctMap } from '../../api/Utils';
 import { setFocusTableSaga, setQuerySucceeded } from '../../store/actions/tables';
 import { useDispatch } from 'react-redux';
 
@@ -166,18 +166,29 @@ function draw(
         ref_columns_name: columnOrdinalsToNames(fk.ref_table_name as string, fk.ref_columns_index as number[])
       }))
 
-      let selectQuery = `select * from ${schema}.${focusTable} ${tableAlias(focusTable)}`;
-      let joinQueries = foreignKeysData.reduce((result, fk) => {
-        let subfix = joinSubfix(tableAlias(fk.table_name), fk.columns_name, tableAlias(fk.ref_table_name as string), fk.ref_columns_name);
+      const focusTableAlias = `${focusTable}0`;
+
+      let selectQuery = `select * from ${schema}.${focusTable} ${focusTableAlias}`;
+
+      let joinQueries = foreignKeysData.reduce((result, fk, i) => {
+        const rtableAlias = `${fk.ref_table_name}${i}`
+        let subfix = joinSubfix(
+          focusTableAlias, fk.columns_name, 
+          rtableAlias, fk.ref_columns_name);
         let joinQuery = subfix ? `
-        join ${schema}.${fk.ref_table_name} ${tableAlias(fk.ref_table_name as string)} on ${subfix}` : "";
+    JOIN ${schema}.${fk.ref_table_name} ${rtableAlias} on ${subfix}` : "";
         return result += joinQuery
-      }, "")
+      }, "");
+
       const fullQuery = `${selectQuery}${joinQueries}`;
       return  {query: fullQuery, friendshipData: foreignKeysData};
     }
 
-    const {query, friendshipData} = friendship();
+    let {query, friendshipData} = friendship();
+    if (!query) {
+      query = `select * from ${schema}.${focusTable}`;
+    }
+
     setQuery(query); // display query outside svg
 
     // draw

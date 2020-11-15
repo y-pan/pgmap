@@ -131,10 +131,12 @@ function draw(
     .append("g")
     .classed("g-box", true)
     .attr("transform", `translate(${MARGIN.left}, ${MARGIN.top})`);
-  // tables
-  const gTable = g.classed("g-table", true);
 
-  // - tables: boxs
+  const gTable = g.append("g").classed("g-table", true);
+  const gColumn = g.append("g").classed("g-column", true);
+  const gConstraint = g.append("g").classed("g-contraint", true);
+
+  // ------ table -------
   gTable
     .selectAll("rect.table")
     .data(tableDrawData.data) //, function(d) {return (d as any).name;})
@@ -148,7 +150,6 @@ function draw(
     .attr("width", (d) => d.w)
     .attr("height", (d) => d.h);
 
-  // - table: names
   gTable
     .selectAll("rect.table-name")
     .data(tableDrawData.data) //, function(d) {return (d as any).name;})
@@ -188,12 +189,10 @@ function draw(
       }
     });
 
-  const gColumnOuter = g
-    .append("g")
-    .classed("g-column-outer", true)
-    .attr("transform", `translate(0, ${CELL_HEIGHT})`);
+  // ------ column -------
+  gColumn.attr("transform", `translate(0, ${CELL_HEIGHT})`);
 
-  gColumnOuter
+  gColumn
     .selectAll("rect.column-name")
     .data(enrichedColumnData)
     .join("rect")
@@ -203,7 +202,7 @@ function draw(
     .attr("width", CELL_WIDTH)
     .attr("height", CELL_HEIGHT);
 
-  gColumnOuter
+  gColumn
     .selectAll("text.column-name")
     .data(enrichedColumnData)
     .join("text")
@@ -212,6 +211,7 @@ function draw(
     .attr("y", (d) => d.y + CELL_TEXT_HEIGHT_ADJUSTMENT)
     .text((d) => d.text);
 
+  // ------ constraint -------
   // Draw friendship connections, using: enrichedColumnData (knows position) & constraints!
 }
 

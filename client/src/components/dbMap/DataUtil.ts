@@ -6,7 +6,7 @@ import {
   TableTypes,
 } from "../../api/type";
 import { compare, SMap } from "../../api/Utils";
-import { CELL_HEIGHT, CELL_WIDTH, FONT_HEIGHT } from "./SvgMap";
+import { CELL_HEIGHT, CELL_WIDTH } from "./SvgMap";
 
 export interface XY {
   x: number;
@@ -27,10 +27,16 @@ export interface TableItemExtended extends XY, WH {
 export interface HasText {
   text: string;
 }
-
+// db-column means the column in db
+// ui-column means the drawed column on UI
 /** @summary returns array of [w, h] */
 export function tableWH(size: number): { w: number; h: number } {
-  return { w: CELL_WIDTH, h: CELL_HEIGHT * size + 1 }; // 1 is for table_name itself
+  return {
+    w: CELL_WIDTH, // 1 cell, or 1 ui-column, per ui-row
+    h:
+      CELL_HEIGHT *
+      (size /* how many db-columns of the table */ + 1) /* table name */,
+  };
 }
 
 export interface ColumnItemExtended extends ColumnItem, XY, HasText {
@@ -237,7 +243,7 @@ export function friendship(
   const fullQuery = `${selectQuery}${joinQueries}`;
   return { query: fullQuery, data: enrichedFkConstraints };
 }
-const COLUMN_TEXT_MARGIN_LEFT: number = 10;
+const COLUMN_TEXT_MARGIN_LEFT: number = 0;
 
 export function indexColumnItems(columns: ColumnItem[]): ColumnItem[] {
   if (!columns) return columns;
@@ -291,7 +297,7 @@ export function enrichColumnData(
     .map((col) => {
       const tablePos: XY = table2TablePos[col.table_name];
       const x = tablePos.x + COLUMN_TEXT_MARGIN_LEFT;
-      const y = tablePos.y + (col.index + 1) * FONT_HEIGHT; // tricky
+      const y = tablePos.y + (col.index + 1) * CELL_HEIGHT; // tricky
       let text: string = col.column_name;
       const colConstraints: ConstraintItem[] =
         table2Constraints[col.table_name];

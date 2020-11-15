@@ -33,14 +33,18 @@ interface Props {
   constraints: ConstraintItem[];
 }
 
-// export const FONT_SIZE = 15; // For "flyway_schema_history" FONT_SIZE 15 -> 116px w * 18px h
-export const FONT_HEIGHT = 18; // magic number !
-export const CELL_HEIGHT = 25; // cell height
-export const CELL_WIDTH = 500; // cell width
-export const TABLE_VSPACE = 15,
-  TABLE_HSPACE = 15;
+export const MARGIN = { top: 10, left: 10, right: 10, bottom: 10 };
+
+// CELL_TEXT_HEIGHT_ADJUSTMENT: in each *ItemExtended (TableItemExtended, ColumnItemExtended), the calculated `y` is just right for `rect`, but not for `text`, need to plus this adjustment.
+export const CELL_TEXT_HEIGHT_ADJUSTMENT = -5;
+export const CELL_TEXT_X_ADJUSTMENT = 10; // So not to touch rect's left border
+export const CELL_HEIGHT = 21; // ui-cell height
+export const CELL_WIDTH = 500; // ui-cell width
+export const TABLE_VSPACE = 15;
+export const TABLE_HSPACE = 15;
 
 function draw(
+  svgWidth: number,
   svgDom: SVGElement,
   schema: string,
   focusTable: string | undefined,
@@ -54,7 +58,6 @@ function draw(
     console.warn("Cannot draw!");
     return;
   }
-  const svgW = Math.max(800, window.innerWidth - 300);
 
   // process tables, constraints, columns
   const table2Constraints: SMap<ConstraintItem[]> = groupBy<
@@ -74,7 +77,7 @@ function draw(
     table2Columns,
     TABLE_HSPACE,
     TABLE_VSPACE,
-    svgW
+    svgWidth
   );
   const table2TablePos: SMap<XY> = toDistinctMap<TableItemExtended, XY>(
     tableDrawData.data,
@@ -106,16 +109,30 @@ function draw(
   setQuery(selectJoinQuery); // display query outside svg
 
   // draw
+  /**
+   * Hierarchy:
+   *    svg (width/height takes margins and calculated drawing area size into accounts)
+   *      > g.g-box (1 container to apply margins.)
+   *        > g.g-*  (containers for rects and texts.)
+   *
+   * Note: <g> has no style attached to the class (g-*), which is only for debugging purpose.
+   *       <g> is made for logical grouping, and with some translate(x,y) as needed, and nothing else.
+   */
+
   const svg = d3
     .select(svgDom)
-    .attr("width", tableDrawData.drawAreaWidth)
-    .attr("height", tableDrawData.drawAreaHeight);
+    .attr("width", tableDrawData.drawAreaWidth + MARGIN.left + MARGIN.right)
+    .attr("height", tableDrawData.drawAreaHeight + MARGIN.top + MARGIN.bottom);
 
   // Clean up everything.
   svg.selectAll("g").remove();
 
+  const g = svg
+    .append("g")
+    .classed("g-box", true)
+    .attr("transform", `translate(${MARGIN.left}, ${MARGIN.top})`);
   // tables
-  const gTable = svg.append("g").classed("g-table", true);
+  const gTable = g.classed("g-table", true);
 
   // - tables: boxs
   gTable
@@ -151,15 +168,19 @@ function draw(
     });
 
   gTable
+    .append("g")
     .selectAll("text.table-name")
     .data(tableDrawData.data) //, function(d) {return (d as any).name;})
     .join("text")
     .classed("table-name", true)
     .classed("table-view", (d) => d.type === TableTypes.VIEW)
     .classed("table-focus", (d) => d.name === focusTable)
-    .attr("x", (d) => d.x + CELL_WIDTH / 2)
-    .attr("y", (d) => d.y + FONT_HEIGHT)
-    .text((d) => `${d.name} [${table2Columns[d.name].length}]`)
+    .attr("x", (d) => d.x + CELL_TEXT_X_ADJUSTMENT)
+    .attr("y", (d) => d.y + CELL_HEIGHT + CELL_TEXT_HEIGHT_ADJUSTMENT)
+    .text(
+      (d) =>
+        `${d.name} [Size: ${table2Columns[d.name].length}, Type: ${d.type}]`
+    )
     .on("click", function (event, d) {
       event.stopPropagation();
       if (focusTable !== d.name) {
@@ -167,18 +188,28 @@ function draw(
       }
     });
 
-  const gColumnOuter = svg
+  const gColumnOuter = g
     .append("g")
     .classed("g-column-outer", true)
     .attr("transform", `translate(0, ${CELL_HEIGHT})`);
+
+  gColumnOuter
+    .selectAll("rect.column-name")
+    .data(enrichedColumnData)
+    .join("rect")
+    .classed("column-name", true)
+    .attr("x", (d) => d.x)
+    .attr("y", (d) => d.y - CELL_HEIGHT)
+    .attr("width", CELL_WIDTH)
+    .attr("height", CELL_HEIGHT);
 
   gColumnOuter
     .selectAll("text.column-name")
     .data(enrichedColumnData)
     .join("text")
     .classed("column-name", true)
-    .attr("x", (d) => d.x)
-    .attr("y", (d) => d.y)
+    .attr("x", (d) => d.x + CELL_TEXT_X_ADJUSTMENT)
+    .attr("y", (d) => d.y + CELL_TEXT_HEIGHT_ADJUSTMENT)
     .text((d) => d.text);
 
   // Draw friendship connections, using: enrichedColumnData (knows position) & constraints!
@@ -192,13 +223,19 @@ const SvgMap: React.FC<Props> = ({
   constraints,
 }) => {
   const dispatch = useDispatch();
-
+  // calculate proper width
+  const leftList = document.getElementById("table-list");
+  let leftListWidth = leftList ? leftList.clientWidth : 0; /* hardcoded */
+  let availableWidth = window.innerWidth - leftListWidth - 60; /* margine */
+  const svgWidth = Math.max(availableWidth, 500 /* hardcoded min width */);
+  console.log("svgWidth", svgWidth, leftListWidth);
   return (
     <svg
       className="schema-svg-map"
       ref={(ref) =>
         ref &&
         draw(
+          svgWidth,
           ref,
           schema,
           focusTable,

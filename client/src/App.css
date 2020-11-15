@@ -1,3 +1,7 @@
+* {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
 .App {
   text-align: center;
 }
@@ -59,50 +63,66 @@ svg.schema-svg-map {
 }
 
 rect {
-  stroke-width: 1px;
-  fill: rgba(255, 255, 255, 0.1);
-  stroke: rgb(11, 11, 11);
+  /* stroke-width: 1px; */
+  fill: rgba(255, 255, 255, 1);
+  stroke: #dde0e6;
 }
-
 rect.table {
-  fill: rgba(173, 178, 249, 0.5);
-  stroke: lightskyblue;
+}
+rect.table-name {
+  fill: rgb(190, 217, 235);
+  cursor: pointer;
+}
+rect.column-name {
 }
 
-rect.table-name {
-  fill: rgba(249, 249, 249, 0.5);
-  stroke: rgba(16, 17, 17, 0.781);
-  cursor: pointer;
+rect.table-focus {
+}
+rect.table-view {
+  fill: rgb(220, 219, 219);
 }
 
 text {
   font-size: 15px;
-  fill: black;
-  text-anchor: middle;
+  fill: rgb(14, 14, 14);
 }
-
 text.table-name {
   font-weight: bold;
   cursor: pointer;
 }
 text.column-name {
-  text-anchor: start;
+  /* text-anchor: start; */
 }
-
-rect.table-view {
-  /* View type*/
-  fill: rgba(rgba(232, 117, 222, 0.557), green, blue, 1);
-  stroke: rgba(255, 0, 0, 0.7);
-}
-
 text.table-view {
   font-weight: normal;
 }
-
-rect.table-focus {
-  stroke: blue;
-}
-
 text.table-focus {
   fill: blue;
+}
+
+.valign-bottom {
+  vertical-align: bottom;
+}
+
+.copied {
+  font-weight: normal;
+  margin: 0;
+  font-size: 12px;
+}
+
+.query-box {
+  vertical-align: bottom;
+  text-align: start;
+  padding-top: 12px;
+  padding-left: 12px;
+  padding-right: 12px;
+  min-width: 500px;
+}
+
+#query {
+  border-radius: 5px;
+}
+
+.hidden {
+  visibility: hidden;
 }

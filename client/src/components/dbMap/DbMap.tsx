@@ -53,7 +53,6 @@ const DbMap: React.FC<Props> = (props) => {
               <textarea
                 id="query"
                 readOnly
-                style={{ width: "80%" }}
                 value={query || ""}
                 rows={3}
                 onClick={copyToClipboard}

@@ -57,7 +57,7 @@ function draw(
     const friendshipData = friendship(schema, focusTable, table2Constraints[focusTable], table2Columns);
 
     // columns
-    const enrichedColumnData: ColumnItemExtended[] = enrichColumnData(table2Columns, table2TablePos, table2Constraints);
+    const enrichedColumnData: ColumnItemExtended[] = enrichColumnData(focusTable, table2Columns, table2TablePos, table2Constraints);
     
     let selectJoinQuery = friendshipData.query;
     if (!selectJoinQuery) {

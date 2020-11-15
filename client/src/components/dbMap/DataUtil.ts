@@ -261,6 +261,7 @@ export function indexColumnItemsMap(
 }
 
 export function enrichColumnData(
+  focusTable: string,
   table2Columns: SMap<ColumnItem[]>,
   table2TablePos: SMap<XY>,
   table2Constraints: SMap<ConstraintItem[]>
@@ -268,6 +269,25 @@ export function enrichColumnData(
   const columnsExtended: ColumnItemExtended[] = Object.values(table2Columns)
     .flat()
     .filter((col) => !!table2TablePos[col.table_name])
+    .sort((col1, col2) => {
+      // Sort is not mandatory. With/without sort, the UI is the same.
+      // It only affect the order of dom elements. Good for debugging with dom element ordered, just like the UI.
+      // Disable sorting need higher performance.
+      const tableComp = compare(col1.table_name, col2.table_name);
+      if (tableComp === 0) {
+        // same table, just compare the ordinal
+        return compare(col1.ordinal_position, col2.ordinal_position);
+      }
+
+      // different tables, focusTable's column should be on the top, then compare ordinal
+      if (col1.table_name === focusTable) {
+        return -1; // col1 will be above col2, regardless the name compare
+      }
+      if (col2.table_name === focusTable) {
+        return 1; // col2 will be above col1, regardless the name compare
+      }
+      return tableComp; // They are not from the focus table, use name compare
+    })
     .map((col) => {
       const tablePos: XY = table2TablePos[col.table_name];
       const x = tablePos.x + COLUMN_TEXT_MARGIN_LEFT;
@@ -303,16 +323,7 @@ export function enrichColumnData(
         const fkeyStrsDisplay = fkeyStrs.join(","); // like `user.id`
         text = `${col.column_name}${conTypesStrDisplay}${fkeyStrsDisplay}`; // like `user_id [f,u] user.id`
       }
-      if (col.column_name === "city" || col.column_name === "postal_code") {
-        console.log(
-          "### ",
-          col.column_name,
-          col.ordinal_position,
-          col.table_name,
-          text,
-          y
-        );
-      }
+
       return { ...col, x, y, text };
     });
 

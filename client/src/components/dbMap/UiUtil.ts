@@ -28,13 +28,12 @@ export function wrapText(text, font: string, textWidth: number): string {
   return ellipsised ? `${txt}...` : txt;
 }
 
-function timed(func: Function, numOfRepeats: number = 1): any {
+function timed(func: Function, numOfRepeats: number = 1): void {
   const t0 = new Date().getTime();
   for (let i = 0; i < numOfRepeats; i++) {
     func();
   }
   const t1 = new Date().getTime();
-
   console.log(`${numOfRepeats} runs took seconds: ${(t1 - t0) / 1000}`);
 }
 (window as any).timed = timed;

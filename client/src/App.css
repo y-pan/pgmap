@@ -105,9 +105,10 @@ text.table-focus {
 }
 
 .copied {
-  font-weight: normal;
+  font-weight: bold;
   margin: 0;
   font-size: 12px;
+  color: green;
 }
 
 .query-box {

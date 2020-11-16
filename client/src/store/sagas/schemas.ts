@@ -10,10 +10,9 @@ import {
 } from "../actions/schemas";
 import { fetchSchemas } from "../../api/Api";
 import { SchemaResponse } from "../../api/type";
-import { getTablesSaga } from "../actions/tables";
+import { getTablesSaga, unsetFocusTableSucceeded } from "../actions/tables";
 import { getColumnsSaga } from "../actions/columns";
 import { getConstraintsSaga } from "../actions/constraints";
-import { Action } from "../actions/actionTypes";
 
 function* getSchemasSaga() {
   try {
@@ -33,6 +32,7 @@ function* watchGetSchemaSage() {
 function* setCurrentSchemaSaga(schema: string) {
   try {
     if (schema) {
+      yield put(unsetFocusTableSucceeded());
       yield put(setCurrentSchemaSucceeded(schema));
       yield all([
         put(getTablesSaga()),

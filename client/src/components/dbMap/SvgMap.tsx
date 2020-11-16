@@ -2,7 +2,6 @@ import React from "react";
 import {
   ColumnItem,
   ConstraintItem,
-  ConstraintTypes,
   TableItem,
   TableTypes,
 } from "../../api/type";
@@ -19,11 +18,14 @@ import {
   EnrichedTableData,
   enrichTableData,
   friendship,
+  getConstraintDrawData,
   getTableAndFriends,
   indexColumnItemsMap,
+  Margin,
   TableItemExtended,
   XY,
 } from "./DataUtil";
+import { wrapText } from "./UiUtil";
 
 interface Props {
   schema: string;
@@ -33,16 +35,23 @@ interface Props {
   constraints: ConstraintItem[];
 }
 
-export const MARGIN = { top: 10, left: 10, right: 10, bottom: 10 };
+export const MARGIN: Margin = { top: 10, left: 30, right: 30, bottom: 10 };
+export const CELL_HEIGHT: number = 21; // ui-cell height
+export const CELL_WIDTH: number = 200; // ui-cell width
+
+export const TABLE_VSPACE: number = 30;
+export const TABLE_HSPACE: number = 30;
 
 // CELL_TEXT_HEIGHT_ADJUSTMENT: in each *ItemExtended (TableItemExtended, ColumnItemExtended), the calculated `y` is just right for `rect`, but not for `text`, need to plus this adjustment.
-export const CELL_TEXT_HEIGHT_ADJUSTMENT = -5;
-export const CELL_TEXT_X_ADJUSTMENT = 10; // So not to touch rect's left border
-export const CELL_HEIGHT = 21; // ui-cell height
-export const CELL_WIDTH = 500; // ui-cell width
-export const TABLE_VSPACE = 15;
-export const TABLE_HSPACE = 15;
+export const CELL_TEXT_HEIGHT_ADJUSTMENT: number = -5;
+export const CELL_TEXT_PADDING_LEFT: number = 5; // So not to touch rect's left border
+export const CELL_TEXT_PADDING_RIGHT: number = 5; // So not to touch rect's left border
+export const CELL_TEXT_WIDTH: number =
+  CELL_WIDTH - CELL_TEXT_PADDING_LEFT - CELL_TEXT_PADDING_RIGHT;
+export const CELL_TEXT_FONT = `15px Arial`;
+export const CELL_TABLE_NAME_FONT = `bold 15px Arial`;
 
+const drawConstraint: boolean = false; // enable it when ready
 function draw(
   svgWidth: number,
   svgDom: SVGElement,
@@ -72,7 +81,7 @@ function draw(
   const filteredTables: TableItem[] = focusTable
     ? getTableAndFriends(focusTable, tables, table2Constraints[focusTable])
     : tables;
-  const tableDrawData: EnrichedTableData = enrichTableData(
+  const enrichedFilteredTables: EnrichedTableData = enrichTableData(
     filteredTables,
     table2Columns,
     TABLE_HSPACE,
@@ -80,7 +89,7 @@ function draw(
     svgWidth
   );
   const table2TablePos: SMap<XY> = toDistinctMap<TableItemExtended, XY>(
-    tableDrawData.data,
+    enrichedFilteredTables.data,
     (td) => td.name,
     (td) => ({ x: td.x, y: td.y }),
     MappingStrategy.USE_LATEST_ON_DUPLICATE_WARNED
@@ -89,12 +98,12 @@ function draw(
   const friendshipData = friendship(
     schema,
     focusTable,
-    table2Constraints[focusTable],
+    focusTable ? table2Constraints[focusTable] : constraints, // if has focusTable, then only take those related, otherwise take all
     table2Columns
   );
 
   // columns
-  const enrichedColumnData: ColumnItemExtended[] = enrichColumnData(
+  const enrichedColumns: ColumnItemExtended[] = enrichColumnData(
     focusTable,
     table2Columns,
     table2TablePos,
@@ -121,8 +130,14 @@ function draw(
 
   const svg = d3
     .select(svgDom)
-    .attr("width", tableDrawData.drawAreaWidth + MARGIN.left + MARGIN.right)
-    .attr("height", tableDrawData.drawAreaHeight + MARGIN.top + MARGIN.bottom);
+    .attr(
+      "width",
+      enrichedFilteredTables.drawAreaWidth + MARGIN.left + MARGIN.right
+    )
+    .attr(
+      "height",
+      enrichedFilteredTables.drawAreaHeight + MARGIN.top + MARGIN.bottom
+    );
 
   // Clean up everything.
   svg.selectAll("g").remove();
@@ -136,10 +151,10 @@ function draw(
   const gColumn = g.append("g").classed("g-column", true);
   const gConstraint = g.append("g").classed("g-contraint", true);
 
-  // ------ table -------
+  // ------ draw db table -------
   gTable
     .selectAll("rect.table")
-    .data(tableDrawData.data) //, function(d) {return (d as any).name;})
+    .data(enrichedFilteredTables.data) //, function(d) {return (d as any).name;})
     .enter()
     .append("rect")
     // .join('rect')
@@ -152,7 +167,7 @@ function draw(
 
   gTable
     .selectAll("rect.table-name")
-    .data(tableDrawData.data) //, function(d) {return (d as any).name;})
+    .data(enrichedFilteredTables.data) //, function(d) {return (d as any).name;})
     .join("rect")
     .classed("table-name", true)
     .classed("table-view", (d) => d.type === TableTypes.VIEW)
@@ -171,16 +186,16 @@ function draw(
   gTable
     .append("g")
     .selectAll("text.table-name")
-    .data(tableDrawData.data) //, function(d) {return (d as any).name;})
+    .data(enrichedFilteredTables.data) //, function(d) {return (d as any).name;})
     .join("text")
     .classed("table-name", true)
     .classed("table-view", (d) => d.type === TableTypes.VIEW)
     .classed("table-focus", (d) => d.name === focusTable)
-    .attr("x", (d) => d.x + CELL_TEXT_X_ADJUSTMENT)
+    .attr("x", (d) => d.x + CELL_TEXT_PADDING_LEFT)
     .attr("y", (d) => d.y + CELL_HEIGHT + CELL_TEXT_HEIGHT_ADJUSTMENT)
     .text(
-      (d) =>
-        `${d.name} [Size: ${table2Columns[d.name].length}, Type: ${d.type}]`
+      (d) => wrapText(d.name, CELL_TABLE_NAME_FONT, CELL_TEXT_WIDTH)
+      // `${d.name} [Size: ${table2Columns[d.name].length}, Type: ${d.type}]`
     )
     .on("click", function (event, d) {
       event.stopPropagation();
@@ -189,12 +204,12 @@ function draw(
       }
     });
 
-  // ------ column -------
+  // ------ draw db columns -------
   gColumn.attr("transform", `translate(0, ${CELL_HEIGHT})`);
 
   gColumn
     .selectAll("rect.column-name")
-    .data(enrichedColumnData)
+    .data(enrichedColumns)
     .join("rect")
     .classed("column-name", true)
     .attr("x", (d) => d.x)
@@ -204,15 +219,41 @@ function draw(
 
   gColumn
     .selectAll("text.column-name")
-    .data(enrichedColumnData)
+    .data(enrichedColumns)
     .join("text")
     .classed("column-name", true)
-    .attr("x", (d) => d.x + CELL_TEXT_X_ADJUSTMENT)
+    .attr("x", (d) => d.x + CELL_TEXT_PADDING_LEFT)
     .attr("y", (d) => d.y + CELL_TEXT_HEIGHT_ADJUSTMENT)
-    .text((d) => d.text);
+    .text((d) => wrapText(d.text, CELL_TEXT_FONT, CELL_TEXT_WIDTH));
 
-  // ------ constraint -------
-  // Draw friendship connections, using: enrichedColumnData (knows position) & constraints!
+  // ------ draw db constraints -------
+  if (!drawConstraint) {
+    return;
+  }
+  const constraintDrawData = getConstraintDrawData(
+    friendshipData.data,
+    enrichedColumns,
+    new Set<string>(filteredTables.map((table) => table.table_name))
+  );
+
+  const line = d3.line();
+  gConstraint
+    .selectAll("path.constraint")
+    .data(constraintDrawData)
+    .enter()
+    .append("path")
+    .classed("constraint", true)
+    .attr("d", (d) => {
+      return line(d as any);
+    })
+    .on("mouseover", function (event, d) {
+      event.preventDefault();
+      this.classList.add("hightlight");
+    })
+    .on("mouseout", function (event, d) {
+      event.preventDefault();
+      this.classList.remove("hightlight");
+    });
 }
 
 const SvgMap: React.FC<Props> = ({
@@ -228,7 +269,6 @@ const SvgMap: React.FC<Props> = ({
   let leftListWidth = leftList ? leftList.clientWidth : 0; /* hardcoded */
   let availableWidth = window.innerWidth - leftListWidth - 60; /* margine */
   const svgWidth = Math.max(availableWidth, 500 /* hardcoded min width */);
-  console.log("svgWidth", svgWidth, leftListWidth);
   return (
     <svg
       className="schema-svg-map"

@@ -119,6 +119,15 @@ text.table-focus {
   min-width: 500px;
 }
 
+path.constraint {
+  fill: none;
+  stroke: rgba(252, 113, 6, 0.4);
+  stroke-width: 3px;
+}
+path.hightlight {
+  stroke: rgba(190, 6, 252, 0.4);
+}
+
 #query {
   width: 100%;
   display: block;

@@ -5,9 +5,15 @@ import {
   TableItem,
   TableTypes,
 } from "../../api/type";
-import { compare, SMap } from "../../api/Utils";
+import { compare, groupBy, SMap } from "../../api/Utils";
 import { CELL_HEIGHT, CELL_WIDTH } from "./SvgMap";
 
+export interface Margin {
+  top: number;
+  left: number;
+  bottom: number;
+  right: number;
+}
 export interface XY {
   x: number;
   y: number;
@@ -43,7 +49,7 @@ export interface ColumnItemExtended extends ColumnItem, XY, HasText {
   // column need to know its constraint type(s)
 }
 
-export interface ConstraintDrawData extends ConstraintItem {
+export interface ConstraintItemExtended extends ConstraintItem {
   // connect all column points when hover/double-click
   // constraint need to know where column(s) located, for
   columns_name: string[]; // connterpart to columns_index: number[]
@@ -190,7 +196,7 @@ export function joinQuerySubfix(
 
 export interface FriendShipData {
   query: string;
-  data: ConstraintDrawData[];
+  data: ConstraintItemExtended[];
 }
 
 export function friendship(
@@ -199,7 +205,7 @@ export function friendship(
   constraints: ConstraintItem[],
   table2Columns: SMap<ColumnItem[]>
 ): FriendShipData {
-  if (!schema || !focusTable || !constraints) return { query: "", data: [] };
+  if (!schema || !constraints) return { query: "", data: [] };
 
   const fkConstraints = constraints.filter(
     (con) => con.constraint_type === ConstraintTypes.FOREIGN_KEY
@@ -207,7 +213,7 @@ export function friendship(
 
   if (!fkConstraints) return { query: "", data: [] };
 
-  const enrichedFkConstraints: ConstraintDrawData[] = fkConstraints.map(
+  const enrichedFkConstraints: ConstraintItemExtended[] = fkConstraints.map(
     (fk) => ({
       ...fk,
       columns_name: columnOrdinalsToNames(
@@ -222,25 +228,30 @@ export function friendship(
   );
 
   // use enrichedFkConstraints to generate query string
-  const focusTableAlias = `${focusTable}0`;
-  let selectQuery = `SELECT * FROM ${schema}.${focusTable} ${focusTableAlias}`;
+  let fullQuery = "";
+  if (focusTable) {
+    // query requires a focus table
+    const focusTableAlias = `${focusTable}0`;
+    let selectQuery = `SELECT * FROM ${schema}.${focusTable} ${focusTableAlias}`;
 
-  let joinQueries: string = enrichedFkConstraints.reduce((result, fk, i) => {
-    const rtableAlias = `${fk.ref_table_name}${i}`;
-    let subfix = joinQuerySubfix(
-      focusTableAlias,
-      fk.columns_name,
-      rtableAlias,
-      fk.ref_columns_name
-    );
-    let joinQuery = subfix
-      ? `
-  JOIN ${schema}.${fk.ref_table_name} ${rtableAlias} on ${subfix}`
-      : "";
-    return (result += joinQuery);
-  }, "");
+    let joinQueries: string = enrichedFkConstraints.reduce((result, fk, i) => {
+      const rtableAlias = `${fk.ref_table_name}${i}`;
+      let subfix = joinQuerySubfix(
+        focusTableAlias,
+        fk.columns_name,
+        rtableAlias,
+        fk.ref_columns_name
+      );
+      let joinQuery = subfix
+        ? `
+    JOIN ${schema}.${fk.ref_table_name} ${rtableAlias} on ${subfix}`
+        : "";
+      return (result += joinQuery);
+    }, "");
 
-  const fullQuery = `${selectQuery}${joinQueries}`;
+    fullQuery = `${selectQuery}${joinQueries}`;
+  }
+
   return { query: fullQuery, data: enrichedFkConstraints };
 }
 const COLUMN_TEXT_MARGIN_LEFT: number = 0;
@@ -336,31 +347,50 @@ export function enrichColumnData(
   return columnsExtended;
 }
 
-// const BrowserText = (function () {
-//   const canvas = document.createElement("canvas");
-//   const context = canvas.getContext("2d");
+export type PathItem = number[][];
 
-//   /**
-//    * Measures the rendered width of arbitrary text given the font size and font face
-//    * @param {string} text The text to measure
-//    * @param {number} fontSize The font size in pixels
-//    * @param {string} fontFace The font face ("Arial", "Helvetica", etc.)
-//    * @returns {number} The width of the text
-//    **/
-//   function getWidth(
-//     text = "hello world",
-//     fontSize = 25,
-//     fontFace = "Helvetica"
-//   ) {
-//     context.font = fontSize + "px " + fontFace;
-//     return context.measureText(text).width;
-//   }
+export function getConstraintDrawData(
+  constraints: ConstraintItemExtended[], // fk
+  columns: ColumnItemExtended[],
+  tableNameSet: Set<string>
+): PathItem[] {
+  const pathes: PathItem[] = [];
+  const table2ColumnsExtended: SMap<ColumnItemExtended[]> = groupBy(
+    columns,
+    (col) => col.table_name
+  );
 
-//   return {
-//     getWidth: getWidth,
-//   };
-// })();
+  constraints
+    .filter((constr) => constr.constraint_type === ConstraintTypes.FOREIGN_KEY)
+    .forEach((constr) => {
+      const selfTable = constr.table_name;
+      const selfColNames = new Set<string>(constr.columns_name);
+      const foreignTable = constr.ref_table_name;
+      const foreignColNames = new Set<string>(constr.ref_columns_name);
 
-// // Then call it like this:
-// console.log(BrowserText.getWidth("hello world", 22, "Arial")); // 105.166015625
-// console.log(BrowserText.getWidth("hello world", 22)); // 100.8154296875
+      // normally they are just 1 self-column -> 1 foreign-column.
+      const selfCols: ColumnItemExtended[] = table2ColumnsExtended[
+        selfTable
+      ].filter((col) => selfColNames.has(col.column_name));
+      const foreignCols: ColumnItemExtended[] = table2ColumnsExtended[
+        foreignTable
+      ].filter((col) => foreignColNames.has(col.column_name));
+
+      if (selfCols.length !== foreignCols.length)
+        console.warn(`Foreign key columns not compatible!`);
+
+      for (let i = 0; i < selfCols.length; i++) {
+        const selfPoint: number[] = [
+          selfCols[i].x,
+          selfCols[i].y + CELL_HEIGHT / 2,
+        ];
+        const foreignPoint: number[] = [
+          foreignCols[i].x,
+          foreignCols[i].y + CELL_HEIGHT / 2,
+        ];
+        const path: PathItem = [selfPoint, foreignPoint];
+        pathes.push(path);
+      }
+    });
+  return pathes;
+}

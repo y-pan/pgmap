@@ -380,17 +380,35 @@ export function getConstraintDrawData(
         console.warn(`Foreign key columns not compatible!`);
 
       for (let i = 0; i < selfCols.length; i++) {
-        const selfPoint: number[] = [
-          selfCols[i].x,
-          selfCols[i].y + CELL_HEIGHT / 2,
-        ];
-        const foreignPoint: number[] = [
-          foreignCols[i].x,
-          foreignCols[i].y + CELL_HEIGHT / 2,
-        ];
-        const path: PathItem = [selfPoint, foreignPoint];
-        pathes.push(path);
+        pathes.push(pathItemOf(selfCols[i], foreignCols[i]));
       }
     });
   return pathes;
+}
+
+const xShift: number = 10;
+function pathItemOf(p1: XY, p2: XY): PathItem {
+  const _p1: number[] = [
+    p1.x >= p2.x ? p1.x : p1.x + CELL_WIDTH,
+    p1.y + CELL_HEIGHT / 2,
+  ];
+  const _p2: number[] = [
+    p2.x >= p1.x ? p2.x : p2.x + CELL_WIDTH,
+    p2.y + CELL_HEIGHT / 2,
+  ];
+
+  const middlePath: number[][] = [];
+  if (_p1[0] === _p2[0]) {
+    /**
+     * vertically same, make it like this shape:
+     *     -- user_id [f] user.id
+     *    |
+     *    |
+     *     -- id [p]
+     */
+    middlePath.push([_p1[0] - xShift, _p1[1]]);
+    middlePath.push([_p2[0] - xShift, _p2[1]]);
+  }
+
+  return [_p1, ...middlePath, _p2];
 }

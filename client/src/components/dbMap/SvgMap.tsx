@@ -51,7 +51,7 @@ export const CELL_TEXT_WIDTH: number =
 export const CELL_TEXT_FONT = `15px Arial`;
 export const CELL_TABLE_NAME_FONT = `bold 15px Arial`;
 
-const drawConstraint: boolean = false; // enable it when ready
+const drawConstraint: boolean = true; // enable it when ready
 function draw(
   svgWidth: number,
   svgDom: SVGElement,

@@ -267,8 +267,9 @@ const SvgMap: React.FC<Props> = ({
   // calculate proper width
   const leftList = document.getElementById("table-list");
   let leftListWidth = leftList ? leftList.clientWidth : 0; /* hardcoded */
-  let availableWidth = window.innerWidth - leftListWidth - 60; /* margine */
+  let availableWidth = window.innerWidth - leftListWidth - 100; /* margine */
   const svgWidth = Math.max(availableWidth, 500 /* hardcoded min width */);
+  console.log("a", availableWidth, svgWidth);
   return (
     <svg
       className="schema-svg-map"

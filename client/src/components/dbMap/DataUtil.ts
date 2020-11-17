@@ -244,7 +244,7 @@ export function friendship(
       );
       let joinQuery = subfix
         ? `
-    JOIN ${schema}.${fk.ref_table_name} ${rtableAlias} on ${subfix}`
+    LEFT JOIN ${schema}.${fk.ref_table_name} ${rtableAlias} on ${subfix}`
         : "";
       return (result += joinQuery);
     }, "");

@@ -2,6 +2,7 @@ import React from "react";
 import {
   ColumnItem,
   ConstraintItem,
+  ConstraintTypes,
   TableItem,
   TableTypes,
 } from "../../api/type";
@@ -117,6 +118,19 @@ function draw(
 
   setQuery(selectJoinQuery); // display query outside svg
 
+  function columnHasFk(col: ColumnItemExtended): boolean {
+    const cons = table2Constraints[col.table_name];
+    if (!cons) return false;
+    // TODO: Not efficient to do same search for every columns in the table.
+    // Would be better have a map, or put needed constraint data into columnItemExtended
+    return !!cons
+      // .filter(con => con.constraint_type === ConstraintTypes.FOREIGN_KEY)
+      .find(
+        (con) =>
+          con.constraint_type === ConstraintTypes.FOREIGN_KEY &&
+          con.columns_index.includes(col.ordinal_position)
+      );
+  }
   // draw
   /**
    * Hierarchy:
@@ -212,6 +226,7 @@ function draw(
     .data(enrichedColumns)
     .join("rect")
     .classed("column-name", true)
+    .classed("column-fk", (d) => columnHasFk(d))
     .attr("x", (d) => d.x)
     .attr("y", (d) => d.y - CELL_HEIGHT)
     .attr("width", CELL_WIDTH)

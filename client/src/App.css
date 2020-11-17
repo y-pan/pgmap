@@ -138,3 +138,7 @@ path.hightlight {
 .hidden {
   visibility: hidden;
 }
+
+rect.column-fk {
+  stroke: rgba(252, 113, 6, 0.4);
+}

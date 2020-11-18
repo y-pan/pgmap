@@ -52,7 +52,8 @@ export const CELL_TEXT_WIDTH: number =
 export const CELL_TEXT_FONT = `15px Arial`;
 export const CELL_TABLE_NAME_FONT = `bold 15px Arial`;
 
-const drawConstraint: boolean = true; // enable it when ready
+(window as any).d3 = d3;
+
 function draw(
   svgWidth: number,
   svgDom: SVGElement,
@@ -154,8 +155,9 @@ function draw(
     );
 
   // Clean up everything.
-  svg.selectAll("g").remove();
+  svg.selectAll("*").remove();
 
+  // ------ draw begins ------
   const g = svg
     .append("g")
     .classed("g-box", true)
@@ -242,9 +244,21 @@ function draw(
     .text((d) => wrapText(d.text, CELL_TEXT_FONT, CELL_TEXT_WIDTH));
 
   // ------ draw db constraints -------
-  if (!drawConstraint) {
-    return;
-  }
+  // path marker def: arrow
+  svg
+    .append("svg:defs")
+    .append("marker")
+    .attr("id", "arrow")
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 5)
+    .attr("refY", 0)
+    .attr("markerWidth", 4)
+    .attr("markerHeight", 4)
+    .attr("orient", "auto")
+    .append("path")
+    .attr("d", "M0,-5L10,0L0,5")
+    .style("fill", "rgba(252, 113, 6, 1)");
+
   const constraintDrawData = getConstraintDrawData(
     friendshipData.data,
     enrichedColumns,
@@ -261,6 +275,7 @@ function draw(
     .attr("d", (d) => {
       return line(d as any);
     })
+    .attr("marker-end", "url(#arrow)")
     .on("mouseover", function (event, d) {
       event.preventDefault();
       this.classList.add("hightlight");

@@ -7,7 +7,13 @@ import {
   TableTypes,
 } from "../../api/type";
 import * as d3 from "d3";
-import { groupBy, MappingStrategy, SMap, toDistinctMap } from "../../api/Utils";
+import {
+  groupBy,
+  MappingStrategy,
+  mapTransform,
+  SMap,
+  toDistinctMap,
+} from "../../api/Utils";
 import {
   setFocusTableSaga,
   setQuerySucceeded,
@@ -71,27 +77,37 @@ function draw(
   }
 
   // process tables, constraints, columns
-  const table2Constraints: SMap<ConstraintItem[]> = groupBy<
+  const t2Cons: SMap<ConstraintItem[]> = groupBy<
     ConstraintItem,
     ConstraintItem
   >(constraints, (constraint) => constraint.table_name);
-  const table2Columns: SMap<ColumnItem[]> = indexColumnItemsMap(
+
+  const t2Cols: SMap<ColumnItem[]> = indexColumnItemsMap(
     groupBy<ColumnItem, ColumnItem>(columns, (column) => column.table_name)
+  );
+  const t2ColCount: SMap<number> = mapTransform(
+    t2Cols,
+    (tableName) => tableName,
+    (tableName, columns) => columns.length
   );
 
   // There might be some gap in ordinal_position number might be missing. We need to actual index
   const filteredTables: TableItem[] = focusTable
-    ? getTableAndFriends(focusTable, tables, table2Constraints[focusTable])
+    ? getTableAndFriends(focusTable, tables, t2Cons[focusTable])
     : tables;
-  const enrichedFilteredTables: EnrichedTableData = enrichTableData(
+  const {
+    tablesExtended,
+    totalWidth,
+    totalHeight,
+  }: EnrichedTableData = enrichTableData(
     filteredTables,
-    table2Columns,
+    t2ColCount,
     TABLE_HSPACE,
     TABLE_VSPACE,
     svgWidth
   );
-  const table2TablePos: SMap<XY> = toDistinctMap<TableItemExtended, XY>(
-    enrichedFilteredTables.data,
+  const t2Pos: SMap<XY> = toDistinctMap<TableItemExtended, XY>(
+    tablesExtended,
     (td) => td.name,
     (td) => ({ x: td.x, y: td.y }),
     MappingStrategy.USE_LATEST_ON_DUPLICATE_WARNED
@@ -100,16 +116,16 @@ function draw(
   const friendshipData = friendship(
     schema,
     focusTable,
-    focusTable ? table2Constraints[focusTable] : constraints, // if has focusTable, then only take those related, otherwise take all
-    table2Columns
+    focusTable ? t2Cons[focusTable] : constraints, // if has focusTable, then only take those related, otherwise take all
+    t2Cols
   );
 
   // columns
   const enrichedColumns: ColumnItemExtended[] = enrichColumnData(
     focusTable,
-    table2Columns,
-    table2TablePos,
-    table2Constraints
+    t2Cols,
+    t2Pos,
+    t2Cons
   );
 
   let selectJoinQuery = friendshipData.query;
@@ -120,7 +136,7 @@ function draw(
   setQuery(selectJoinQuery); // display query outside svg
 
   function columnHasFk(col: ColumnItemExtended): boolean {
-    const cons = table2Constraints[col.table_name];
+    const cons = t2Cons[col.table_name];
     if (!cons) return false;
     // TODO: Not efficient to do same search for every columns in the table.
     // Would be better have a map, or put needed constraint data into columnItemExtended
@@ -145,14 +161,8 @@ function draw(
 
   const svg = d3
     .select(svgDom)
-    .attr(
-      "width",
-      enrichedFilteredTables.drawAreaWidth + MARGIN.left + MARGIN.right
-    )
-    .attr(
-      "height",
-      enrichedFilteredTables.drawAreaHeight + MARGIN.top + MARGIN.bottom
-    );
+    .attr("width", totalWidth + MARGIN.left + MARGIN.right)
+    .attr("height", totalHeight + MARGIN.top + MARGIN.bottom);
 
   // Clean up everything.
   svg.selectAll("*").remove();
@@ -170,7 +180,7 @@ function draw(
   // ------ draw db table -------
   gTable
     .selectAll("rect.table")
-    .data(enrichedFilteredTables.data) //, function(d) {return (d as any).name;})
+    .data(tablesExtended)
     .enter()
     .append("rect")
     // .join('rect')
@@ -183,7 +193,7 @@ function draw(
 
   gTable
     .selectAll("rect.table-name")
-    .data(enrichedFilteredTables.data) //, function(d) {return (d as any).name;})
+    .data(tablesExtended)
     .join("rect")
     .classed("table-name", true)
     .classed("table-view", (d) => d.type === TableTypes.VIEW)
@@ -202,7 +212,7 @@ function draw(
   gTable
     .append("g")
     .selectAll("text.table-name")
-    .data(enrichedFilteredTables.data) //, function(d) {return (d as any).name;})
+    .data(tablesExtended) //, function(d) {return (d as any).name;})
     .join("text")
     .classed("table-name", true)
     .classed("table-view", (d) => d.type === TableTypes.VIEW)
@@ -211,7 +221,7 @@ function draw(
     .attr("y", (d) => d.y + CELL_HEIGHT + CELL_TEXT_HEIGHT_ADJUSTMENT)
     .text(
       (d) => wrapText(d.name, CELL_TABLE_NAME_FONT, CELL_TEXT_WIDTH)
-      // `${d.name} [Size: ${table2Columns[d.name].length}, Type: ${d.type}]`
+      // `${d.name} [Size: ${t2Cols[d.name].length}, Type: ${d.type}]`
     )
     .on("click", function (event, d) {
       event.stopPropagation();

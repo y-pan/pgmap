@@ -98,3 +98,17 @@ export function compare<T>(v1: T, v2: T): number {
   if (v1 > v2) return 1;
   return 0;
 }
+
+export function mapTransform<T, R>(
+  map: SMap<T>,
+  newKey: (oldKey: string, oldVal: T) => string,
+  newVal: (oldKey: string, oldVal: T) => R
+): SMap<R> {
+  if (!map) return undefined;
+  const newMap: SMap<R> = {};
+  for (let k in map) {
+    const v = map[k];
+    newMap[newKey(k, v)] = newVal(k, v);
+  }
+  return newMap;
+}

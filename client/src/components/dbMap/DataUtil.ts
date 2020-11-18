@@ -6,7 +6,7 @@ import {
   TableTypes,
 } from "../../api/type";
 import { compare, groupBy, SMap } from "../../api/Utils";
-import { CELL_HEIGHT, CELL_WIDTH } from "./SvgMap";
+import { CELL_HEIGHT, CELL_WIDTH, TABLE_HSPACE, TABLE_VSPACE } from "./SvgMap";
 
 export interface Margin {
   top: number;
@@ -23,11 +23,9 @@ export interface WH {
   w: number;
   h: number;
 }
-
 export interface TableItemExtended extends XY, WH {
   type: TableTypes;
   name: string;
-  columns: ColumnItem[]; // columns of the table
 }
 
 export interface HasText {
@@ -101,32 +99,30 @@ export function sortTableByTypeName(tables: TableItem[]): TableItem[] {
 }
 
 export interface EnrichedTableData {
-  data: TableItemExtended[];
-  drawAreaWidth: number;
-  drawAreaHeight: number;
+  tablesExtended: TableItemExtended[];
+  totalWidth: number;
+  totalHeight: number;
 }
 
 export function enrichTableData(
   tableItems: TableItem[],
-  table2Columns: SMap<ColumnItem[]>,
-  hSpace: number,
-  vSpace: number,
+  table2Size: SMap<number>,
+  hSpace: number = TABLE_HSPACE,
+  vSpace: number = TABLE_VSPACE,
   drawAreaWdith: number
 ): EnrichedTableData {
   let cursorX = 0,
     cursorY = 0,
     cursorH = 0;
-  const filteredTableData: TableItemExtended[] = [];
+  const tableData: TableItemExtended[] = [];
   for (let tableItem of tableItems) {
-    const tableCols: ColumnItem[] = table2Columns[tableItem.table_name];
-    const { w, h } = tableWH(tableCols.length);
+    const { w, h } = tableWH(table2Size[tableItem.table_name]);
 
     if (cursorX + w < drawAreaWdith) {
       // keep append table to the right, on same row
-      filteredTableData.push({
+      tableData.push({
         name: tableItem.table_name,
         type: tableItem.table_type,
-        columns: tableCols,
         x: cursorX,
         y: cursorY,
         w,
@@ -139,10 +135,9 @@ export function enrichTableData(
       cursorX = 0;
       cursorY += cursorH + vSpace;
       cursorH = h;
-      filteredTableData.push({
+      tableData.push({
         name: tableItem.table_name,
         type: tableItem.table_type,
-        columns: tableCols,
         x: cursorX,
         y: cursorY,
         w,
@@ -152,9 +147,9 @@ export function enrichTableData(
     }
   }
   return {
-    data: filteredTableData,
-    drawAreaHeight: cursorY + cursorH,
-    drawAreaWidth: drawAreaWdith,
+    tablesExtended: tableData,
+    totalHeight: cursorY + cursorH,
+    totalWidth: drawAreaWdith,
   };
 }
 
@@ -203,7 +198,7 @@ export function friendship(
   schema: string,
   focusTable: string,
   constraints: ConstraintItem[],
-  table2Columns: SMap<ColumnItem[]>
+  t2Cols: SMap<ColumnItem[]>
 ): FriendShipData {
   if (!schema || !constraints) return { query: "", data: [] };
 
@@ -218,11 +213,11 @@ export function friendship(
       ...fk,
       columns_name: columnOrdinalsToNames(
         fk.columns_index,
-        table2Columns[fk.table_name]
+        t2Cols[fk.table_name]
       ),
       ref_columns_name: columnOrdinalsToNames(
         fk.ref_columns_index,
-        table2Columns[fk.ref_table_name]
+        t2Cols[fk.ref_table_name]
       ),
     })
   );
@@ -266,12 +261,12 @@ export function indexColumnItems(columns: ColumnItem[]): ColumnItem[] {
 }
 
 export function indexColumnItemsMap(
-  table2Columns: SMap<ColumnItem[]>
+  t2Cols: SMap<ColumnItem[]>
 ): SMap<ColumnItem[]> {
-  if (!table2Columns) return table2Columns;
+  if (!t2Cols) return t2Cols;
   let newMap = {};
-  for (let key in table2Columns) {
-    let columnItems: ColumnItem[] = table2Columns[key];
+  for (let key in t2Cols) {
+    let columnItems: ColumnItem[] = t2Cols[key];
     newMap[key] = indexColumnItems(columnItems);
   }
   return newMap;
@@ -279,13 +274,13 @@ export function indexColumnItemsMap(
 
 export function enrichColumnData(
   focusTable: string,
-  table2Columns: SMap<ColumnItem[]>,
-  table2TablePos: SMap<XY>,
-  table2Constraints: SMap<ConstraintItem[]>
+  t2Cols: SMap<ColumnItem[]>,
+  t2Pos: SMap<XY>,
+  t2Cons: SMap<ConstraintItem[]>
 ): ColumnItemExtended[] {
-  const columnsExtended: ColumnItemExtended[] = Object.values(table2Columns)
+  const columnsExtended: ColumnItemExtended[] = Object.values(t2Cols)
     .flat()
-    .filter((col) => !!table2TablePos[col.table_name])
+    .filter((col) => !!t2Pos[col.table_name])
     .sort((col1, col2) => {
       // Sort is not mandatory. With/without sort, the UI is the same.
       // It only affect the order of dom elements. Good for debugging with dom element ordered, just like the UI.
@@ -306,12 +301,11 @@ export function enrichColumnData(
       return tableComp; // They are not from the focus table, use name compare
     })
     .map((col) => {
-      const tablePos: XY = table2TablePos[col.table_name];
+      const tablePos: XY = t2Pos[col.table_name];
       const x = tablePos.x + COLUMN_TEXT_MARGIN_LEFT;
       const y = tablePos.y + (col.index + 1) * CELL_HEIGHT; // tricky
       let text: string = col.column_name;
-      const colConstraints: ConstraintItem[] =
-        table2Constraints[col.table_name];
+      const colConstraints: ConstraintItem[] = t2Cons[col.table_name];
 
       if (colConstraints && colConstraints.length > 0) {
         let constTypes: ConstraintTypes[] = [];
@@ -324,7 +318,7 @@ export function enrichColumnData(
               // display <table>.<column> as well
               const refTable: string = constr.ref_table_name;
               const refColOrdinals = constr.ref_columns_index; // The is actually the ordinal_position, 1-base
-              const refColItems: ColumnItem[] = table2Columns[refTable]; // Ordered by ordinal already. To improve effeciency
+              const refColItems: ColumnItem[] = t2Cols[refTable]; // Ordered by ordinal already. To improve effeciency
               const refColNamesStr: string = refColOrdinals
                 .map((ordinalPos, index) => refColItems[index].column_name)
                 .join(",");
@@ -355,7 +349,7 @@ export function getConstraintDrawData(
   tableNameSet: Set<string>
 ): PathItem[] {
   const pathes: PathItem[] = [];
-  const table2ColumnsExtended: SMap<ColumnItemExtended[]> = groupBy(
+  const t2ColsExtended: SMap<ColumnItemExtended[]> = groupBy(
     columns,
     (col) => col.table_name
   );
@@ -369,10 +363,10 @@ export function getConstraintDrawData(
       const foreignColNames = new Set<string>(constr.ref_columns_name);
 
       // normally they are just 1 self-column -> 1 foreign-column.
-      const selfCols: ColumnItemExtended[] = table2ColumnsExtended[
+      const selfCols: ColumnItemExtended[] = t2ColsExtended[
         selfTable
       ].filter((col) => selfColNames.has(col.column_name));
-      const foreignCols: ColumnItemExtended[] = table2ColumnsExtended[
+      const foreignCols: ColumnItemExtended[] = t2ColsExtended[
         foreignTable
       ].filter((col) => foreignColNames.has(col.column_name));
 
@@ -412,3 +406,129 @@ function pathItemOf(p1: XY, p2: XY): PathItem {
 
   return [_p1, ...middlePath, _p2];
 }
+
+// export interface TableItemFull extends TableItemExtended {}
+// export interface ColumnItemFull extends ColumnItemExtended {}
+// export interface ConstraintItemFull extends ConstraintItemExtended {}
+// export interface DrawData {
+//   tableData: TableItemFull[];
+//   columData: ColumnItemFull[];
+//   constraintData: ConstraintItemFull[];
+// }
+
+// export function processData(
+//   focusTable: string | undefined,
+//   tables: TableItem[],
+//   columns: ColumnItem[],
+//   constraints: ConstraintItem[],
+//   svgWidth: number,
+//   tableHSpace: number = TABLE_HSPACE,
+//   tableVSpace: number = TABLE_VSPACE
+// ): DrawData {
+//   // filter/group constraints
+//   const { fCons, pCons, uCons, tNames } = filterConstraints(
+//     constraints,
+//     focusTable
+//   );
+//   focusTable && tNames.add(focusTable); // Add the focus table any, in case it has no constraint
+
+//   // filter tables
+//   const tbFiltered: TableItem[] = tables.filter((tb) =>
+//     tNames.has(tb.table_name)
+//   );
+
+//   // group columns by table
+//   const tb2Cols: SMap<ColumnItem[]> = groupBy(
+//     columns.filter((col) => tNames.has(col.table_name)),
+//     (col) => col.table_name
+//   );
+//   const tb2Sizes: SMap<number> = mapTransform(
+//     tb2Cols,
+//     (tableName) => tableName,
+//     (tableName, columns) => columns.length
+//   );
+
+//   // calc table pixel size, and total draw pixel size
+//   const tableDataExtended: EnrichedTableData = enrichTableData(
+//     tbFiltered,
+//     tb2Sizes,
+//     tableHSpace,
+//     tableVSpace,
+//     svgWidth
+//   );
+
+//   const friendshipData = friendship;
+//   /// ==============
+//   let tableData: TableItemFull[] = [];
+//   let columnData: ColumnItemFull[] = [];
+//   let constraintData: ConstraintItemFull[] = [];
+
+//   let tablesNeeded: TableItem[] = tables;
+//   let columnsNeeded: ColumnItem[] = columns;
+
+//   if (!focusTable) {
+//     tableData = tables as any;
+//     columnData = columns as any;
+//     constraintData = constraints as any;
+//   } else {
+//     // has focusTable, will show: [focusTable, tablesReferencedByFocus, tablesReferencingFocus]
+//     tableData = [tables.find((tb) => tb.table_name === focusTable)];
+//   }
+
+//   return null;
+// }
+
+// interface ConstraintFilterResult {
+//   fCons: ConstraintItem[];
+//   pCons: ConstraintItem[];
+//   uCons: ConstraintItem[];
+//   tNames: Set<string>;
+// }
+// function filterConstraints(
+//   constraints: ConstraintItem[],
+//   focusTable: string
+// ): ConstraintFilterResult {
+//   let fCons: ConstraintItem[] = [];
+//   let pCons: ConstraintItem[] = [];
+//   let uCons: ConstraintItem[] = [];
+//   let tNames: Set<string> = new Set();
+
+//   // putting needed constraints into own buckets
+//   for (let con of constraints) {
+//     switch (con.constraint_type) {
+//       case ConstraintTypes.FOREIGN_KEY:
+//         if (
+//           !focusTable ||
+//           focusTable === con.table_name ||
+//           focusTable === con.ref_table_name
+//         ) {
+//           fCons.push(con);
+//           tNames.add(con.table_name);
+//           tNames.add(con.ref_table_name);
+//         }
+//         break;
+//       case ConstraintTypes.PRIMARY_KEY:
+//         if (!focusTable || focusTable === con.table_name) {
+//           pCons.push(con);
+//           tNames.add(con.table_name);
+//         }
+//         break;
+//       case ConstraintTypes.UNIQUE:
+//         if (!focusTable || focusTable === con.table_name) {
+//           uCons.push(con);
+//           tNames.add(con.table_name);
+//         }
+//         break;
+//       default:
+//         console.warn("Unknown constraint type: " + con.constraint_type);
+//         break;
+//     }
+//   }
+
+//   return {
+//     fCons,
+//     pCons,
+//     uCons,
+//     tNames,
+//   };
+// }

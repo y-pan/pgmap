@@ -49,7 +49,7 @@ export default function SelectedListItem() {
   let tableList: JSX.Element[] = [];
   if (!tables || tables.length === 0) {
     tableList = [
-      <ListItem button>
+      <ListItem key={-1} button>
         <ListItemText secondary="No Table" />
       </ListItem>,
     ];

@@ -97,7 +97,7 @@ function draw(
     ? getTableAndFriends(focusTable, tables, t2Cons[focusTable])
     : tables;
   const {
-    tablesExtended,
+    tableData,
     totalWidth,
     totalHeight,
   }: EnrichedTableData = enrichTableData(
@@ -108,7 +108,7 @@ function draw(
     svgWidth
   );
   const t2Pos: SMap<XY> = toDistinctMap<TableItemExtended, XY>(
-    tablesExtended,
+    tableData,
     (td) => td.name,
     (td) => ({ x: td.x, y: td.y }),
     MappingStrategy.USE_LATEST_ON_DUPLICATE_WARNED
@@ -168,7 +168,7 @@ function draw(
   // ------ draw db table -------
   gTable
     .selectAll("rect.table")
-    .data(tablesExtended)
+    .data(tableData)
     .enter()
     .append("rect")
     // .join('rect')
@@ -181,7 +181,7 @@ function draw(
 
   gTable
     .selectAll("rect.table-name")
-    .data(tablesExtended)
+    .data(tableData)
     .join("rect")
     .classed("table-name", true)
     .classed("table-view", (d) => d.type === TableTypes.VIEW)
@@ -200,7 +200,7 @@ function draw(
   gTable
     .append("g")
     .selectAll("text.table-name")
-    .data(tablesExtended) //, function(d) {return (d as any).name;})
+    .data(tableData) //, function(d) {return (d as any).name;})
     .join("text")
     .classed("table-name", true)
     .classed("table-view", (d) => d.type === TableTypes.VIEW)

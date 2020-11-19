@@ -100,7 +100,7 @@ export function sortTableByTypeName(tables: TableItem[]): TableItem[] {
 }
 
 export interface EnrichedTableData {
-  tablesExtended: TableItemExtended[];
+  tableData: TableItemExtended[];
   totalWidth: number;
   totalHeight: number;
 }
@@ -148,7 +148,7 @@ export function enrichTableData(
     }
   }
   return {
-    tablesExtended: tableData,
+    tableData: tableData,
     totalHeight: cursorY + cursorH,
     totalWidth: drawAreaWdith,
   };

@@ -1,13 +1,22 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
-import { TableItem } from '../../api/type';
-import { LoadingStatus } from '../../store/reducers/types';
-import { getColumns, getColumnsStatus } from '../../store/selectors/columns';
-import { getConstraints, getConstraintsStatus } from '../../store/selectors/constaints';
-import { getCurrent, getSetCurrentSchemaStatus } from '../../store/selectors/schemas';
-import { getFocusTable, getTables, getTablesStatus } from '../../store/selectors/tables';
-import Status from '../status/Status';
-import SvgMap from './SvgMap';
+import React from "react";
+import { useSelector } from "react-redux";
+import { LoadingStatus } from "../../store/reducers/types";
+import { getColumns, getColumnsStatus } from "../../store/selectors/columns";
+import {
+  getConstraints,
+  getConstraintsStatus,
+} from "../../store/selectors/constaints";
+import {
+  getCurrent,
+  getSetCurrentSchemaStatus,
+} from "../../store/selectors/schemas";
+import {
+  getFocusTable,
+  getTables,
+  getTablesStatus,
+} from "../../store/selectors/tables";
+import Status from "../status/Status";
+import SvgMap from "./SvgMap";
 
 const SchemaMap: React.FC = () => {
   const currentSchema = useSelector(getCurrent);
@@ -19,23 +28,32 @@ const SchemaMap: React.FC = () => {
   const constraints = useSelector(getConstraints);
   const constraintsStatus = useSelector(getConstraintsStatus);
   const focusTable = useSelector(getFocusTable);
-  
-  const isReadyToDrawMap = tablesStatus === LoadingStatus.SUCCEEDED 
-  && columnsStatus === LoadingStatus.SUCCEEDED
-  && constraintsStatus === LoadingStatus.SUCCEEDED;
+
+  const isReadyToDrawMap =
+    tablesStatus === LoadingStatus.SUCCEEDED &&
+    columnsStatus === LoadingStatus.SUCCEEDED &&
+    constraintsStatus === LoadingStatus.SUCCEEDED;
 
   let allStatus: JSX.Element[] = [];
   let canRenderSvg = false;
   if (currentSchemaStatus !== LoadingStatus.SUCCEEDED) {
-    allStatus = [<Status key="schemas-status" name="Schemas" status={currentSchemaStatus}/>]
+    allStatus = [
+      <Status
+        key="schemas-status"
+        name="Schemas"
+        status={currentSchemaStatus}
+      />,
+    ];
   } else if (!isReadyToDrawMap) {
-    allStatus= (
-      [
-        <Status key="tables-status" name="Tables" status={tablesStatus}/>,
-        <Status key="columns-status" name="Columns" status={columnsStatus}/>,
-        <Status key="constraints-status" name="Constraints" status={constraintsStatus}/>
-      ]
-    )
+    allStatus = [
+      <Status key="tables-status" name="Tables" status={tablesStatus} />,
+      <Status key="columns-status" name="Columns" status={columnsStatus} />,
+      <Status
+        key="constraints-status"
+        name="Constraints"
+        status={constraintsStatus}
+      />,
+    ];
   } else {
     if (!tables) {
       allStatus = [<div> -- No Table Available -- </div>];
@@ -47,16 +65,17 @@ const SchemaMap: React.FC = () => {
   return (
     <div className="schema-map">
       {allStatus}
-      {canRenderSvg && 
+      {canRenderSvg && (
         <SvgMap
           schema={currentSchema as string}
           focusTable={focusTable}
           tables={tables}
-          columns={columns} 
-          constraints={constraints} />
-         }
+          columns={columns}
+          constraints={constraints}
+        />
+      )}
     </div>
   );
-} 
+};
 
 export default SchemaMap;

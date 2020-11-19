@@ -1,7 +1,6 @@
 import { all, put, takeEvery, call, select, take } from "redux-saga/effects";
 import { fetchTables } from "../../api/Api";
-import { TableItem, TableResponse } from "../../api/type";
-import { Action } from "../actions/actionTypes";
+import { TableResponse } from "../../api/type";
 import {
   getTablesActionSaga,
   getTablesFailed,

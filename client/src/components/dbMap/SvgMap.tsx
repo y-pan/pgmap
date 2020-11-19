@@ -81,7 +81,7 @@ function draw(
   const t2Cons: SMap<ConstraintItem[]> = groupBy<
     ConstraintItem,
     ConstraintItem
-  >(constraints, (constraint) => constraint.table_name);
+  >(constraints, (constraint) => constraint.table_name); // -> TABLE
 
   const t2Cols: SMap<ColumnItem[]> = indexColumnItemsMap(
     groupBy<ColumnItem, ColumnItem>(columns, (column) => column.table_name)
@@ -93,7 +93,7 @@ function draw(
   );
 
   // There might be some gap in ordinal_position number might be missing. We need to actual index
-  const filteredTables: TableItem[] = focusTable
+  const filteredTables: TableItem[] = focusTable // -> TABLE, CONS,
     ? getTableAndFriends(focusTable, tables, t2Cons[focusTable])
     : tables;
   const {
@@ -107,7 +107,7 @@ function draw(
     TABLE_VSPACE,
     svgWidth
   );
-  const t2Pos: SMap<XY> = toDistinctMap<TableItemExtended, XY>(
+  const t2Pos: SMap<XY> = toDistinctMap<TableItemExtended, XY>( // for columns
     tableData,
     (td) => td.name,
     (td) => ({ x: td.x, y: td.y }),
@@ -115,6 +115,7 @@ function draw(
   );
 
   const { query, consExtended } = friendship(
+    // CONS
     schema,
     focusTable,
     focusTable ? t2Cons[focusTable] : constraints, // if has focusTable, then only take those related, otherwise take all
@@ -258,6 +259,7 @@ function draw(
     .style("fill", "rgba(252, 113, 6, 1)");
 
   const constraintDrawData = getConstraintDrawData(
+    // CONS
     consExtended,
     enrichedColumns,
     new Set<string>(filteredTables.map((table) => table.table_name))

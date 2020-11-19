@@ -261,10 +261,9 @@ export function friendship(
       ""
     );
 
-    fullQuery = `${selectBuilder.build()} 
-
-${fromQuery}
-    ${joinQueries}`;
+    fullQuery = `${selectBuilder.build()}
+    
+${fromQuery}${joinQueries}`;
   }
 
   return { query: fullQuery, consExtended: enrichedFkConstraints };

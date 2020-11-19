@@ -1,5 +1,4 @@
 import React from "react";
-import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
@@ -13,22 +12,12 @@ import { LoadingStatus } from "../../store/reducers/types";
 import { TableItem } from "../../api/type";
 import { setFocusTableSaga } from "../../store/actions/tables";
 import { wrapText } from "../dbMap/UiUtil";
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      width: "100%",
-      maxWidth: 200,
-      backgroundColor: theme.palette.background.paper,
-    },
-  })
-);
 
 export default function SelectedListItem() {
   const dispatch = useDispatch();
   const tables = useSelector(getTables);
   const tablesStatus = useSelector(getTablesStatus);
   const focusTable = useSelector(getFocusTable);
-  const classes = useStyles();
 
   const onClickTable = (table: TableItem) => {
     focusTable !== table.table_name &&
@@ -70,8 +59,7 @@ export default function SelectedListItem() {
   }
 
   return (
-    <div className={classes.root}>
-      {/* <Divider /> */}
+    <div>
       <List component="nav">{tableList}</List>
     </div>
   );

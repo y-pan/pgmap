@@ -6,6 +6,7 @@ import {
   TableTypes,
 } from "../../api/type";
 import { compare, groupBy, SMap } from "../../util/utils";
+import SelectColumnsBuilder from "./SelectColumnsBuilder";
 import { CELL_HEIGHT, CELL_WIDTH, TABLE_HSPACE, TABLE_VSPACE } from "./SvgMap";
 
 export interface Margin {
@@ -225,31 +226,50 @@ export function friendship(
 
   // use enrichedFkConstraints to generate query string
   let fullQuery = "";
+  let selectBuilder = new SelectColumnsBuilder();
   if (focusTable) {
     // query requires a focus table
     const focusTableAlias = `${focusTable}0`;
-    let selectQuery = `SELECT * FROM ${schema}.${focusTable} ${focusTableAlias}`;
+    let fromQuery = `FROM ${schema}.${focusTable} ${focusTableAlias}`;
 
-    let joinQueries: string = enrichedFkConstraints.reduce((result, fk, i) => {
-      const rtableAlias = `${fk.ref_table_name}${i}`;
-      let subfix = joinQuerySubfix(
-        focusTableAlias,
-        fk.columns_name,
-        rtableAlias,
-        fk.ref_columns_name
-      );
-      let joinQuery = subfix
-        ? `
+    selectBuilder.add(
+      focusTable,
+      focusTableAlias,
+      t2Cols[focusTable].map((c) => c.column_name)
+    );
+
+    const joinQueries: string = enrichedFkConstraints.reduce(
+      (result, fk, i) => {
+        const rtableAlias = `${fk.ref_table_name}${i}`;
+        selectBuilder.add(
+          fk.ref_table_name,
+          rtableAlias,
+          t2Cols[fk.ref_table_name].map((c) => c.column_name)
+        );
+        const subfix = joinQuerySubfix(
+          focusTableAlias,
+          fk.columns_name,
+          rtableAlias,
+          fk.ref_columns_name
+        );
+        const joinQuery = subfix
+          ? `
     LEFT JOIN ${schema}.${fk.ref_table_name} ${rtableAlias} on ${subfix}`
-        : "";
-      return (result += joinQuery);
-    }, "");
+          : "";
+        return (result += joinQuery);
+      },
+      ""
+    );
 
-    fullQuery = `${selectQuery}${joinQueries}`;
+    fullQuery = `${selectBuilder.build()} 
+
+${fromQuery}
+    ${joinQueries}`;
   }
 
   return { query: fullQuery, consExtended: enrichedFkConstraints };
 }
+
 const COLUMN_TEXT_MARGIN_LEFT: number = 0;
 
 export function indexColumnItems(columns: ColumnItem[]): ColumnItem[] {

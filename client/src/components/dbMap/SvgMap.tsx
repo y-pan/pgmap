@@ -114,7 +114,7 @@ function draw(
     MappingStrategy.USE_LATEST_ON_DUPLICATE_WARNED
   );
 
-  const friendshipData = friendship(
+  const { query, consExtended } = friendship(
     schema,
     focusTable,
     focusTable ? t2Cons[focusTable] : constraints, // if has focusTable, then only take those related, otherwise take all
@@ -129,7 +129,7 @@ function draw(
     t2Cons
   );
 
-  let selectJoinQuery = friendshipData.query;
+  let selectJoinQuery = query;
   if (!selectJoinQuery) {
     selectJoinQuery = focusTable ? `SELECT * FROM ${schema}.${focusTable}` : "";
   }
@@ -258,7 +258,7 @@ function draw(
     .style("fill", "rgba(252, 113, 6, 1)");
 
   const constraintDrawData = getConstraintDrawData(
-    friendshipData.data,
+    consExtended,
     enrichedColumns,
     new Set<string>(filteredTables.map((table) => table.table_name))
   );

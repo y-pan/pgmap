@@ -192,7 +192,7 @@ export function joinQuerySubfix(
 
 export interface FriendShipData {
   query: string;
-  data: ConstraintItemExtended[];
+  consExtended: ConstraintItemExtended[];
 }
 
 export function friendship(
@@ -201,13 +201,13 @@ export function friendship(
   constraints: ConstraintItem[],
   t2Cols: SMap<ColumnItem[]>
 ): FriendShipData {
-  if (!schema || !constraints) return { query: "", data: [] };
+  if (!schema || !constraints) return { query: "", consExtended: [] };
 
   const fkConstraints = constraints.filter(
     (con) => con.constraint_type === ConstraintTypes.FOREIGN_KEY
   );
 
-  if (!fkConstraints) return { query: "", data: [] };
+  if (!fkConstraints) return { query: "", consExtended: [] };
 
   const enrichedFkConstraints: ConstraintItemExtended[] = fkConstraints.map(
     (fk) => ({
@@ -248,7 +248,7 @@ export function friendship(
     fullQuery = `${selectQuery}${joinQueries}`;
   }
 
-  return { query: fullQuery, data: enrichedFkConstraints };
+  return { query: fullQuery, consExtended: enrichedFkConstraints };
 }
 const COLUMN_TEXT_MARGIN_LEFT: number = 0;
 

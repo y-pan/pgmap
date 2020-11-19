@@ -45,6 +45,7 @@ export function tableWH(size: number): { w: number; h: number } {
 
 export interface ColumnItemExtended extends ColumnItem, XY, HasText {
   // column need to know its constraint type(s)
+  cons: Set<ConstraintTypes>;
 }
 
 export interface ConstraintItemExtended extends ConstraintItem {
@@ -306,6 +307,7 @@ export function enrichColumnData(
       const y = tablePos.y + (col.index + 1) * CELL_HEIGHT; // tricky
       let text: string = col.column_name;
       const colConstraints: ConstraintItem[] = t2Cons[col.table_name];
+      const consSet: Set<ConstraintTypes> = new Set();
 
       if (colConstraints && colConstraints.length > 0) {
         let constTypes: ConstraintTypes[] = [];
@@ -314,6 +316,7 @@ export function enrichColumnData(
           let indexArray = constr.columns_index;
           if (indexArray && indexArray.includes(col.ordinal_position)) {
             constTypes.push(constr.constraint_type);
+            consSet.add(constr.constraint_type);
             if (constr.constraint_type === ConstraintTypes.FOREIGN_KEY) {
               // display <table>.<column> as well
               const refTable: string = constr.ref_table_name;
@@ -335,7 +338,7 @@ export function enrichColumnData(
         text = `${col.column_name}${conTypesStrDisplay}${fkeyStrsDisplay}`; // like `user_id [f,u] user.id`
       }
 
-      return { ...col, x, y, text };
+      return { ...col, x, y, text, cons: consSet };
     });
 
   return columnsExtended;

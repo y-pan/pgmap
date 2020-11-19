@@ -26,9 +26,12 @@ class SelectColumnsBuilder {
     alias: string,
     columns: string[]
   ): string {
-    return columns
-      .map((col) => `${alias}.${col} AS ${name}__${col}`)
-      .join(", ");
+    return (
+      columns
+        // .map((col) => `${alias}.${col} AS ${name}__${col}`)
+        .map((col) => `${alias}.${col} AS ${alias}_${col}`) // with alias_col, easier to manually app where clause
+        .join(", ")
+    );
   }
 
   build(): string {

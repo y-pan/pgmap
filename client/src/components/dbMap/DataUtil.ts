@@ -5,7 +5,7 @@ import {
   TableItem,
   TableTypes,
 } from "../../api/type";
-import { compare, groupBy, SMap } from "../../api/Utils";
+import { compare, groupBy, SMap } from "../../util/utils";
 import { CELL_HEIGHT, CELL_WIDTH, TABLE_HSPACE, TABLE_VSPACE } from "./SvgMap";
 
 export interface Margin {

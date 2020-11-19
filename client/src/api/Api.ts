@@ -5,7 +5,7 @@ import {
   SchemaResponse,
   TableResponse,
 } from "./type";
-import { queryOf } from "./Utils";
+import { queryOf } from "../util/utils";
 const { serverPort } = require("../config/config.json");
 
 const baseUrl = `http://localhost:${serverPort}/api`;

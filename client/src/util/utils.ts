@@ -112,3 +112,27 @@ export function mapTransform<T, R>(
   }
   return newMap;
 }
+
+export function timeit(func: Function, numOfRepeats: number = 1): void {
+  const t0 = new Date().getTime();
+  for (let i = 0; i < numOfRepeats; i++) {
+    func();
+  }
+  const t1 = new Date().getTime();
+  console.log(`${numOfRepeats} runs took seconds: ${(t1 - t0) / 1000}`);
+}
+
+/**
+ * @summary Time the function execution, return the execution result
+ */
+export function timed(func: Function): any {
+  const wrapper = (...vars: any[]) => {
+    const t0 = new Date().getTime();
+    func(...vars);
+    const t1 = new Date().getTime();
+    console.log(`Took seconds: ${(t1 - t0) / 1000}`);
+  };
+  return wrapper;
+}
+
+// (window as any).timed = timed;

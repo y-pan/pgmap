@@ -30,6 +30,7 @@ import {
   getConstraintDrawData,
   indexColumnItemsMap,
   Margin,
+  PathItemNamed,
   TableItemExtended,
   XY,
 } from "./DataUtil";
@@ -100,20 +101,27 @@ function draw(
 
   let filteredTables: TableItem[] = tables;
   let filteredConstraints: ConstraintItem[] = constraints;
+  const upstreamTableNames: Set<string> = new Set(); // tables holding relationship to focusTable. Displayed before focusTable
+  const downstreamTableNames: Set<string> = new Set(); // tables where relationship owned by focusTable. Display after focusTable
+
+  // TODO: add and use for styling
+  const upstreamFks: Set<string> = new Set();
+  const downstreamFks: Set<string> = new Set();
+
   if (focusTable) {
     // constraints having relationship
-    const upstream: Set<string> = new Set(); // tables holding relationship to focusTable. Displayed before focusTable
-    const downstream: Set<string> = new Set(); // tables where relationship owned by focusTable. Display after focusTable
 
     filteredConstraints = constraints
       .filter((con) => con.constraint_type === ConstraintTypes.FOREIGN_KEY)
       .filter((con) => {
         if (con.table_name === focusTable) {
-          downstream.add(con.ref_table_name);
+          downstreamTableNames.add(con.ref_table_name);
+          downstreamFks.add(con.constraint);
           return true;
         }
         if (con.ref_table_name === focusTable) {
-          upstream.add(con.table_name);
+          upstreamTableNames.add(con.table_name);
+          upstreamFks.add(con.constraint);
           return true;
         }
         return false;
@@ -132,11 +140,11 @@ function draw(
         const name1 = t1.table_name;
         const name2 = t2.table_name;
 
-        const isT1Up = upstream.has(name1);
-        const isT1Down = downstream.has(name1);
+        const isT1Up = upstreamTableNames.has(name1);
+        const isT1Down = downstreamTableNames.has(name1);
 
-        const isT2Up = upstream.has(name2);
-        const isT2Down = downstream.has(name2);
+        const isT2Up = upstreamTableNames.has(name2);
+        const isT2Down = downstreamTableNames.has(name2);
 
         if (isT1Up && !isT2Up) {
           // t1, t2 is already in sorted order, don't swap
@@ -250,6 +258,8 @@ function draw(
     .classed("table-name", true)
     .classed("table-view", (d) => d.type === TableTypes.VIEW)
     .classed("table-focus", (d) => d.name === focusTable)
+    .classed("upstream", (d) => upstreamTableNames.has(d.name))
+    .classed("downstream", (d) => downstreamTableNames.has(d.name))
     .attr("x", (d) => d.x)
     .attr("y", (d) => d.y)
     .attr("width", (d) => d.w)
@@ -307,8 +317,9 @@ function draw(
 
   // ------ draw db constraints -------
   // path marker def: arrow
-  svg
-    .append("svg:defs")
+  const svgDefs = svg.append("svg:defs");
+
+  svgDefs
     .append("marker")
     .attr("id", "arrow")
     .attr("viewBox", "0 -5 10 10")
@@ -319,9 +330,35 @@ function draw(
     .attr("orient", "auto")
     .append("path")
     .attr("d", "M0,-5L10,0L0,5")
-    .style("fill", "rgba(252, 113, 6, 1)");
+    .style("fill", "rgba(252, 113, 6, .7)");
 
-  const constraintDrawData = getConstraintDrawData(
+  svgDefs
+    .append("marker")
+    .attr("id", "arrow-upstream")
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 5)
+    .attr("refY", 0)
+    .attr("markerWidth", 4)
+    .attr("markerHeight", 4)
+    .attr("orient", "auto")
+    .append("path")
+    .attr("d", "M0,-5L10,0L0,5")
+    .style("fill", "rgba(255, 0, 98, .7)");
+
+  svgDefs
+    .append("marker")
+    .attr("id", "arrow-downstream")
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 5)
+    .attr("refY", 0)
+    .attr("markerWidth", 4)
+    .attr("markerHeight", 4)
+    .attr("orient", "auto")
+    .append("path")
+    .attr("d", "M0,-5L10,0L0,5")
+    .style("fill", "rgba(182, 177, 14, 0.7)");
+
+  const constraintDrawData: PathItemNamed[] = getConstraintDrawData(
     // CONS
     consExtended,
     enrichedColumns,
@@ -335,10 +372,16 @@ function draw(
     .enter()
     .append("path")
     .classed("constraint", true)
+    .classed("upstream", (d) => upstreamFks.has(d.name))
+    .classed("downstream", (d) => downstreamFks.has(d.name))
     .attr("d", (d) => {
-      return line(d as any);
+      return line(d.path as any);
     })
-    .attr("marker-end", "url(#arrow)")
+    .attr("marker-end", (d) => {
+      if (upstreamFks.has(d.name)) return "url(#arrow-upstream)";
+      if (downstreamFks.has(d.name)) return "url(#arrow-downstream)";
+      return "url(#arrow)";
+    })
     .on("mouseover", function (event, d) {
       event.preventDefault();
       this.classList.add("hightlight");

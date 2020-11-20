@@ -98,6 +98,20 @@ path.constraint {
   stroke: rgba(252, 113, 6, 0.4);
   stroke-width: 3px;
 }
+path.upstream {
+  stroke: rgba(255, 0, 98, 0.4);
+}
+path.downstream {
+  stroke: rgba(182, 177, 14, 0.584);
+}
+rect.upstream {
+  stroke: rgba(255, 0, 98, 0.4);
+  stroke-width: 2px;
+}
+rect.downstream {
+  stroke: rgba(182, 177, 14, 0.584);
+  stroke-width: 2px;
+}
 path.hightlight {
   stroke: rgba(190, 6, 252, 0.4);
 }

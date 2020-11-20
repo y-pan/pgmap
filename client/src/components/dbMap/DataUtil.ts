@@ -367,13 +367,17 @@ export function enrichColumnData(
 }
 
 export type PathItem = number[][];
+export interface PathItemNamed {
+  path: PathItem;
+  name: string;
+}
 
 export function getConstraintDrawData(
   constraints: ConstraintItemExtended[], // fk
   columns: ColumnItemExtended[],
   tableNameSet: Set<string>
-): PathItem[] {
-  const pathes: PathItem[] = [];
+): PathItemNamed[] {
+  const pathes: PathItemNamed[] = [];
   const t2ColsExtended: SMap<ColumnItemExtended[]> = groupBy(
     columns,
     (col) => col.table_name
@@ -399,7 +403,10 @@ export function getConstraintDrawData(
         console.warn(`Foreign key columns not compatible!`);
 
       for (let i = 0; i < selfCols.length; i++) {
-        pathes.push(pathItemOf(selfCols[i], foreignCols[i]));
+        pathes.push({
+          name: constr.constraint,
+          path: pathItemOf(selfCols[i], foreignCols[i]),
+        });
       }
     });
   return pathes;

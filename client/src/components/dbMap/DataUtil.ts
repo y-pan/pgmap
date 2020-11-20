@@ -241,8 +241,9 @@ export function friendship(
       t2Cols[focusTable].map((c) => c.column_name)
     );
 
-    const joinQueries: string = enrichedFkConstraints.reduce(
-      (result, fk, i) => {
+    const joinQueries: string = enrichedFkConstraints
+      .filter((con) => con.ref_table_name !== focusTable) // no join on upstream tables
+      .reduce((result, fk, i) => {
         const rtableAlias = `${fk.ref_table_name}${i}`;
         selectBuilder.add(
           fk.ref_table_name,
@@ -260,9 +261,7 @@ export function friendship(
     LEFT JOIN ${schema}.${fk.ref_table_name} ${rtableAlias} on ${subfix}`
           : "";
         return (result += joinQuery);
-      },
-      ""
-    );
+      }, "");
 
     fullQuery = `${selectBuilder.build()}
     

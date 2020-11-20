@@ -2,6 +2,11 @@ export class SequentialSet<T> {
   private list: T[];
   private set: Set<T>;
 
+  static ofArray<T>(array: T[]): SequentialSet<T> {
+    const set = new SequentialSet(array);
+    return set;
+  }
+
   constructor(items?: T[]) {
     this.set = new Set();
     this.list = [];
@@ -10,6 +15,16 @@ export class SequentialSet<T> {
 
   addAll(items: T[]): void {
     items && items.forEach((item) => this.add(item));
+  }
+
+  withAll(items: T[]): SequentialSet<T> {
+    this.addAll(items);
+    return this;
+  }
+
+  with(item: T): SequentialSet<T> {
+    this.add(item);
+    return this;
   }
 
   add(item: T): void {

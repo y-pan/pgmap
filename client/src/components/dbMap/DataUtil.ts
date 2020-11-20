@@ -63,7 +63,7 @@ export interface ConstraintItemExtended extends ConstraintItem {
 export function getTableAndFriends(
   focusTable: string,
   allTables: TableItem[],
-  constraints: ConstraintItem[] = []
+  constraints: ConstraintItem[] = [] // all related fks (self table owning relationship, and other tables)
 ): TableItem[] {
   if (!focusTable) return allTables;
 
@@ -73,14 +73,17 @@ export function getTableAndFriends(
   const refTableSet: Set<string> = new Set();
   for (let constr of constraints) {
     constr.ref_table_name && refTableSet.add(constr.ref_table_name);
+    constr.table_name && refTableSet.add(constr.table_name);
   }
 
   // O(N)
+
   for (let table of allTables) {
     if (focusTable === table.table_name) {
       filteredTables.unshift(table); // push to front
     }
     if (refTableSet.has(table.table_name)) {
+      refTableSet.delete(table.table_name);
       filteredTables.push(table); // push to back
     }
   }

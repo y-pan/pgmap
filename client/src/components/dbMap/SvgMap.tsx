@@ -8,6 +8,7 @@ import {
 } from "../../api/type";
 import * as d3 from "d3";
 import {
+  compare,
   groupBy,
   MappingStrategy,
   mapTransform,
@@ -27,13 +28,13 @@ import {
   enrichTableData,
   friendship,
   getConstraintDrawData,
-  getTableAndFriends,
   indexColumnItemsMap,
   Margin,
   TableItemExtended,
   XY,
 } from "./DataUtil";
 import { wrapText } from "./UiUtil";
+import { SequentialSet } from "../../util/SequentialSet";
 
 interface Props {
   schema: string;
@@ -42,6 +43,8 @@ interface Props {
   columns: ColumnItem[];
   constraints: ConstraintItem[];
 }
+
+declare const window: any | Window;
 
 export const MARGIN: Margin = { top: 10, left: 30, right: 30, bottom: 10 };
 export const CELL_HEIGHT: number = 21; // ui-cell height
@@ -59,7 +62,7 @@ export const CELL_TEXT_WIDTH: number =
 export const CELL_TEXT_FONT = `15px Arial`;
 export const CELL_TABLE_NAME_FONT = `bold 15px Arial`;
 
-(window as any).d3 = d3;
+window.d3 = d3;
 
 function draw(
   svgWidth: number,
@@ -81,7 +84,10 @@ function draw(
   const t2Cons: SMap<ConstraintItem[]> = groupBy<
     ConstraintItem,
     ConstraintItem
-  >(constraints, (constraint) => constraint.table_name); // -> TABLE
+  >(constraints, (constraint) => constraint.table_name); // -> A table's constraints holds relationship.
+
+  window.constraints = constraints;
+  window.t2Cons = t2Cons;
 
   const t2Cols: SMap<ColumnItem[]> = indexColumnItemsMap(
     groupBy<ColumnItem, ColumnItem>(columns, (column) => column.table_name)
@@ -92,10 +98,67 @@ function draw(
     (tableName, columns) => columns.length
   );
 
-  // There might be some gap in ordinal_position number might be missing. We need to actual index
-  const filteredTables: TableItem[] = focusTable // -> TABLE, CONS,
-    ? getTableAndFriends(focusTable, tables, t2Cons[focusTable])
-    : tables;
+  let filteredTables: TableItem[] = tables;
+  let filteredConstraints: ConstraintItem[] = constraints;
+  if (focusTable) {
+    // constraints having relationship
+    const upstream: Set<string> = new Set(); // tables holding relationship to focusTable. Displayed before focusTable
+    const downstream: Set<string> = new Set(); // tables where relationship owned by focusTable. Display after focusTable
+
+    filteredConstraints = constraints
+      .filter((con) => con.constraint_type === ConstraintTypes.FOREIGN_KEY)
+      .filter((con) => {
+        if (con.table_name === focusTable) {
+          downstream.add(con.ref_table_name);
+          return true;
+        }
+        if (con.ref_table_name === focusTable) {
+          upstream.add(con.table_name);
+          return true;
+        }
+        return false;
+      });
+
+    const targetTableNameArray = filteredConstraints
+      .flatMap((con) => [con.table_name, con.ref_table_name])
+      .filter((tbName) => !!tbName);
+
+    const tagetTableNameSet: Set<string> = new Set(targetTableNameArray);
+    filteredTables = tables
+      .filter((tb) => tagetTableNameSet.has(tb.table_name))
+      .sort((t1, t2) => {
+        // upstream tables (referencing focus tables) => focusTable => focusTable's referencing tables
+        // by name asc
+        const name1 = t1.table_name;
+        const name2 = t2.table_name;
+
+        const isT1Up = upstream.has(name1);
+        const isT1Down = downstream.has(name1);
+
+        const isT2Up = upstream.has(name2);
+        const isT2Down = downstream.has(name2);
+
+        if (isT1Up && !isT2Up) {
+          // t1, t2 is already in sorted order, don't swap
+          return -1;
+        }
+        if (!isT1Up && isT2Up) {
+          // t1, t2 is reversed order, need to swap
+          return 1;
+        }
+        if (isT1Down && !isT2Down) {
+          // t1, t2 is reversed order, need to swap
+          return 1;
+        }
+        if (!isT1Down && isT2Down) {
+          // t1 t2 is in already in sorted order, don't swap
+          return -1;
+        }
+        // they are in the same segment: both in upstream, or both in downstream. sort they by name
+        return compare(name1, name2);
+      });
+  }
+
   const {
     tableData,
     totalWidth,
@@ -118,7 +181,7 @@ function draw(
     // CONS
     schema,
     focusTable,
-    focusTable ? t2Cons[focusTable] : constraints, // if has focusTable, then only take those related, otherwise take all
+    focusTable ? filteredConstraints : constraints, // if has focusTable, then only take those related, otherwise take all
     t2Cols
   );
 

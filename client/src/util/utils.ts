@@ -1,3 +1,5 @@
+import { SequentialSet } from "./SequentialSet";
+
 export function queryOf(queryObj: any): string {
   if (!queryObj) {
     return "";
@@ -135,4 +137,7 @@ export function timed(func: Function): any {
   return wrapper;
 }
 
-// (window as any).timed = timed;
+export function distinctArrayOf<T>(array: T[]): T[] {
+  if (!array) return array;
+  return SequentialSet.ofArray(array).values();
+}

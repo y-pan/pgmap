@@ -41,6 +41,7 @@ const DbMapTHead: React.FC = () => {
           </Button>
         </th>
         <th className="query-box">
+          Select (Join) Query:
           <textarea
             id="query"
             readOnly

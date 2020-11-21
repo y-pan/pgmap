@@ -1,4 +1,5 @@
 import { linkSync } from "fs";
+import Benchmark from "../util/benchmark";
 import { timeit } from "../util/utils";
 
 interface ITrie<V> {
@@ -52,39 +53,58 @@ function isEmpty(x: TNode): boolean {
   return true;
 }
 
+function toCharCodes(key: string): number[] {
+  let codes: number[] = new Array(key.length);
+  for (let i = 0; i < key.length; i++) {
+    codes[i] = key.charCodeAt(i);
+  }
+  return codes;
+}
+
+function toString(charCodes: number[]): string {
+  return String.fromCharCode(...charCodes);
+}
+function toStrings(chartCodes: number[][]): string[] {
+  return chartCodes.map(toString);
+}
 class Trie<V> implements ITrie<V> {
   private root: TNode;
   private _size: number = 0;
 
   get(key: string): V {
     throwNil(key);
-    const x: TNode = this.getNode(this.root, key, 0);
+    const keyCodes: number[] = toCharCodes(key);
+    const x: TNode = this.getNode(this.root, keyCodes, 0);
     return isNil(x) ? undefined : x.value;
   }
 
-  private getNode(x: TNode, key: string, ni: number): TNode {
+  private getNode(x: TNode, keyCodes: number[], ni: number): TNode {
     if (isNil(x)) return undefined;
-    if (ni === key.length) return x; // matched to the end of key, all done
-    const nextNode = x.nextByCode(key.charCodeAt(ni));
-    return this.getNode(nextNode, key, ni + 1);
+    if (ni === keyCodes.length) return x; // matched to the end of key, all done
+    const nextNode = x.nextByCode(keyCodes[ni]);
+    return this.getNode(nextNode, keyCodes, ni + 1);
   }
 
   put(key: string, value: V): void {
     throwNil(key);
     throwNil(value);
-    this.root = this.putNode(this.root, key, value, 0);
+    const keyCodes: number[] = toCharCodes(key);
+    this.root = this.putNode(this.root, keyCodes, value, 0);
   }
-  private putNode(x: TNode, key: string, value: V, ni: number): TNode {
+  private putNode(x: TNode, keyCodes: number[], value: V, ni: number): TNode {
     if (isNil(x)) x = new TNode();
-    if (ni === key.length) {
+    if (ni === keyCodes.length) {
       // end
       if (isNil(x.value)) this._size++; // adding new node
       x.value = value; // either same or different, update any
     } else {
       // not end
-      const nextCode: number = key.charCodeAt(ni);
+      const nextCode: number = keyCodes[ni];
       const nextNode = x.nextByCode(nextCode);
-      x.setNextByCode(nextCode, this.putNode(nextNode, key, value, ni + 1));
+      x.setNextByCode(
+        nextCode,
+        this.putNode(nextNode, keyCodes, value, ni + 1)
+      );
     }
     return x;
   }
@@ -108,26 +128,31 @@ class Trie<V> implements ITrie<V> {
   }
   keysPrefix(prefix: string): string[] {
     throwNil(prefix);
-    const queue: string[] = [];
-    const pnode: TNode = this.getNode(this.root, prefix, 0);
-    if (isNil(pnode)) return queue;
+    const queue: number[][] = [];
+    const prefixCodes: number[] = toCharCodes(prefix);
+    const pnode: TNode = this.getNode(this.root, prefixCodes, 0);
+    if (isNil(pnode)) return [];
 
-    this.collect(pnode, prefix, queue);
-    return queue;
+    this.collect(pnode, prefixCodes, queue);
+    return toStrings(queue);
   }
   keysMatch(pattern: string): string[] {
     throwNil(pattern);
     throw new Error("Method not implemented.");
   }
-  private collect(x: TNode, prefix: string, queue: string[]): void {
+  private collect(x: TNode, prefixCodes: number[], queue: number[][]): void {
     if (isNil(x)) return; // no more node
-    if (nonNil(x.value)) queue.push(prefix);
+    if (nonNil(x.value)) queue.push([...prefixCodes]); // shallow copy it, just an number[], to prevent
+    // let isFirst = true;
     for (let charCode = 0; charCode < R; charCode++) {
       // collect from all the next
-      const prefixWithChild = prefix + String.fromCharCode(charCode);
-      this.collect(x.nextByCode(charCode), prefixWithChild, queue);
+      prefixCodes.push(charCode); // to end
+      this.collect(x.nextByCode(charCode), prefixCodes, queue); // not collected correctly ??  app => ["app", "app"], apple => ["apple"]
+      prefixCodes.pop(); // much faster than prefixCodes.splice(prefixCodes.length - 1, 1);
     }
   }
+
+  //  var t = new Trie(); t.put("app", "APPLICATION"); t.put("apple", "an appLE"); t.put("apple", "APPLE"); t.keysPrefix("app");
 
   longestPrefixOf(key: string): string {
     throwNil(key);
@@ -360,11 +385,6 @@ function benchmark() {
   words.push(...words);
   words.push(...words);
   words.push(...words);
-  // words.push(...words);
-  // words.push(...words);
-  // words.push(...words);
-  // words.push(...words);
-  // words.push(...words);
 
   const trie = new Trie();
   const map = {};
@@ -383,66 +403,18 @@ function benchmark() {
 
   const triePrefix = () => {
     const keysPrefix = trie.keysPrefix("n");
-    // console.log(keysPrefix.length);
   };
 
   const mapPrefix = () => {
     const keysPrefix = Object.keys(map).filter((key) => key.startsWith("n"));
-    // console.log(keysPrefix.length);
   };
 
-  // timeit(mapPut, 10000); // 25.91
-  // timeit(mapPrefix, 10000); // 0.1
-  // timeit(triePut, 10000); // 103.412
-  // timeit(triePrefix, 10000); // 1.252
-
-  const runs = 1000;
-
-  console.log("=== m ===");
-  timeit(mapPut, runs); // 25.91
-  timeit(mapPrefix, runs); // 0.1
-  timeit(mapPut, runs); // 25.91
-  timeit(mapPrefix, runs); // 0.1
-  timeit(mapPut, runs); // 25.91
-  timeit(mapPrefix, runs); // 0.1
-  console.log("=== r ===");
-  timeit(triePut, runs); // 103.412
-  timeit(triePrefix, runs); // 1.252
-  timeit(triePut, runs); // 103.412
-  timeit(triePrefix, runs); // 1.252
-  timeit(triePut, runs); // 103.412
-  timeit(triePrefix, runs); // 1.252
-
-  console.log("=== m ===");
-  timeit(mapPut, runs); // 25.91
-  timeit(mapPrefix, runs); // 0.1
-  timeit(mapPut, runs); // 25.91
-  timeit(mapPrefix, runs); // 0.1
-  timeit(mapPut, runs); // 25.91
-  timeit(mapPrefix, runs); // 0.1
-  console.log("=== r ===");
-  timeit(triePut, runs); // 103.412
-  timeit(triePrefix, runs); // 1.252
-  timeit(triePut, runs); // 103.412
-  timeit(triePrefix, runs); // 1.252
-  timeit(triePut, runs); // 103.412
-  timeit(triePrefix, runs); // 1.252
-
-  console.log("=== m ===");
-  timeit(mapPut, runs); // 25.91
-  timeit(mapPrefix, runs); // 0.1
-  timeit(mapPut, runs); // 25.91
-  timeit(mapPrefix, runs); // 0.1
-  timeit(mapPut, runs); // 25.91
-  timeit(mapPrefix, runs); // 0.1
-  console.log("=== r ===");
-  timeit(triePut, runs); // 103.412
-  timeit(triePrefix, runs); // 1.252
-  timeit(triePut, runs); // 103.412
-  timeit(triePrefix, runs); // 1.252
-  timeit(triePut, runs); // 103.412
-  timeit(triePrefix, runs); // 1.252
+  Benchmark.compareFuncAndShow(mapPut, triePut, 500); //In 500 runs, the speed of "mapPut" is 5.366186504927976 times as fast as "triePut".
+  Benchmark.compareFuncAndShow(mapPrefix, triePrefix, 500); //In 500 runs, the speed of "mapPrefix" is 25.42857142857143 times as fast as "triePrefix".
 }
 
 (window as any).benchmark = benchmark;
+
+(window as any).Trie = Trie;
+
 export default Trie;

@@ -1,4 +1,7 @@
 import { SequentialSet } from "./SequentialSet";
+import Trie from "../trie/Trie";
+
+(window as any).Trie = Trie;
 
 export function queryOf(queryObj: any): string {
   if (!queryObj) {

@@ -143,12 +143,16 @@ class Trie<V> implements ITrie<V> {
   private collect(x: TNode, prefixCodes: number[], queue: number[][]): void {
     if (isNil(x)) return; // no more node
     if (nonNil(x.value)) queue.push([...prefixCodes]); // shallow copy it, just an number[], to prevent
-    // let isFirst = true;
+    let isFirst = true;
     for (let charCode = 0; charCode < R; charCode++) {
       // collect from all the next
-      prefixCodes.push(charCode); // to end
-      this.collect(x.nextByCode(charCode), prefixCodes, queue); // not collected correctly ??  app => ["app", "app"], apple => ["apple"]
-      prefixCodes.pop(); // much faster than prefixCodes.splice(prefixCodes.length - 1, 1);
+      if (isFirst) {
+        isFirst = false;
+        prefixCodes.push(charCode); // to end
+      } else {
+        prefixCodes[prefixCodes.length - 1] = charCode;
+      }
+      this.collect(x.nextByCode(charCode), prefixCodes, queue);
     }
   }
 

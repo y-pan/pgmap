@@ -29,7 +29,7 @@ class SelectColumnsBuilder {
     return (
       columns
         // .map((col) => `${alias}.${col} AS ${name}__${col}`)
-        .map((col) => `${alias}.${col} AS ${alias}__${col}`) // with alias_col, easier to manually app where clause
+        .map((col) => `${alias}.${col} AS ${alias}_${col}`) // with alias_col, easier to manually app where clause
         .join(", ")
     );
   }
@@ -37,8 +37,8 @@ class SelectColumnsBuilder {
   build(): string {
     const query = this.tableItems.map(({ name, alias, columns }) =>
       this.columnQueryOf(name, alias, columns)
-    ).join(`
-    ,`);
+    ).join(`,
+    `);
     return query
       ? `SELECT 
     ${query}`

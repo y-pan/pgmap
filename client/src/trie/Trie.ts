@@ -1,7 +1,8 @@
-import { linkSync } from "fs";
 import Benchmark from "../util/benchmark";
-import { timeit } from "../util/utils";
 
+/** Unfortunately, This trie implementation in javascript is much slower than builtin map.
+ * Map is 10X faster in put, 2 times faster in search for prefix. No reason to use it. Leave it alone until find a way to improve it.
+ * */
 interface ITrie<V> {
   get(key: string): V;
   put(key: string, value: V): void;
@@ -14,21 +15,18 @@ interface ITrie<V> {
   keysMatch(pattern: string): string[];
   longestPrefixOf(key: string): string;
 }
-type char = string; // 1 char, just for eye
 
-const R: number = 256;
+const S: number = 48; // start index,  32 is "space". 0 -> 31 is special chars, not needed. 48 is 0
+const R: number = 2 ** 7 - S; // power+1 bits,  power=7  fit for ascii
 
 class TNode {
   value: any;
   next: TNode[];
   nextByCode(chartCode: number): TNode {
-    return this.next[chartCode];
+    return this.next[chartCode - S];
   }
   setNextByCode(chartCode: number, node: TNode): void {
-    this.next[chartCode] = node;
-  }
-  nextByChar(c: char): TNode {
-    return this.nextByCode[c.charCodeAt[0]];
+    this.next[chartCode - S] = node;
   }
   constructor() {
     this.next = new Array(R);
@@ -392,6 +390,9 @@ function benchmark() {
 
   const trie = new Trie();
   const map = {};
+  const PREFIX1 = "next";
+  const PREFIX2 = "len";
+  const PREFIX3 = "current";
 
   const triePut = () => {
     words.forEach((word, index) => {
@@ -406,19 +407,28 @@ function benchmark() {
   };
 
   const triePrefix = () => {
-    const keysPrefix = trie.keysPrefix("n");
+    const keysPrefix1 = trie.keysPrefix(PREFIX1);
+    const keysPrefix2 = trie.keysPrefix(PREFIX2);
+    const keysPrefix3 = trie.keysPrefix(PREFIX3);
   };
 
   const mapPrefix = () => {
-    const keysPrefix = Object.keys(map).filter((key) => key.startsWith("n"));
+    const keysPrefix1 = Object.keys(map).filter((key) =>
+      key.startsWith(PREFIX1)
+    );
+    const keysPrefix2 = Object.keys(map).filter((key) =>
+      key.startsWith(PREFIX2)
+    );
+    const keysPrefix3 = Object.keys(map).filter((key) =>
+      key.startsWith(PREFIX3)
+    );
   };
 
-  Benchmark.compareFuncAndShow(mapPut, triePut, 500); //In 500 runs, the speed of "mapPut" is 5.366186504927976 times as fast as "triePut".
-  Benchmark.compareFuncAndShow(mapPrefix, triePrefix, 500); //In 500 runs, the speed of "mapPrefix" is 25.42857142857143 times as fast as "triePrefix".
+  Benchmark.compareFuncAndShow(mapPut, triePut, 500); //In 500 runs, the speed of "mapPut" is 9.52299605781866 times as fast as "triePut".
+  Benchmark.compareFuncAndShow(mapPrefix, triePrefix, 500); //In 500 runs, the speed of "mapPrefix" is 2 times as fast as "triePrefix".
+
+  console.log("map size:", Object.keys(map).length);
+  console.log("trie size", trie.size());
 }
-
-(window as any).benchmark = benchmark;
-
-(window as any).Trie = Trie;
 
 export default Trie;

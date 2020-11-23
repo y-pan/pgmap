@@ -20,11 +20,19 @@ const SearchInput: React.FC<{}> = () => {
       <TextField
         label="Search"
         ref={(ref) => (searchUiContext.searchResultAnchorElem = ref)}
-        onClick={() => {
+        onDoubleClick={() => {
           !wasFocusRef.current &&
             searchByRef.current &&
             dispatch(searchSaga(searchByRef.current));
           wasFocusRef.current = true;
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            event.stopPropagation();
+            searchByRef.current && dispatch(searchSaga(searchByRef.current));
+            wasFocusRef.current = true;
+          }
         }}
         onChange={(event: ChangeEvent<HTMLInputElement>) => {
           const searchBy: string = event.target.value.trim();

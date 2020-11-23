@@ -19,6 +19,10 @@ function* getSchemasSaga() {
     yield put(getSchemasRequested());
     const schemasReponse: SchemaResponse = yield call(fetchSchemas); // all schemas
     yield put(getSchemasSucceeded(schemasReponse.items));
+    // for convenient, select "public" schema automatically
+    if (schemasReponse.items.find((schema) => schema === "public")) {
+      yield setCurrentSchemaSaga("public");
+    }
   } catch (e) {
     console.error(e);
     yield put(getSchemasFailed());

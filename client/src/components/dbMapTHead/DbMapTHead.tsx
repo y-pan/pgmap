@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { unsetFocusTableSucceeded } from "../../store/actions/tables";
 import { getFocusTable, getQuery } from "../../store/selectors/tables";
 import { Button } from "@material-ui/core";
+import Search from "../search/Search";
 
 const DbMapTHead: React.FC = () => {
   const dispatch = useDispatch();
@@ -33,12 +34,14 @@ const DbMapTHead: React.FC = () => {
       <tr>
         <th id="table-list" className="valign-bottom">
           <Button
+            style={{ display: "block", margin: "0px auto" }}
             color={"primary"}
             disabled={!focusTable}
             onClick={() => dispatch(unsetFocusTableSucceeded())}
           >
-            Unselect
+            Deselect
           </Button>
+          <Search />
         </th>
         <th className="query-box">
           Select (Join) Query:

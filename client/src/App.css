@@ -13,7 +13,10 @@ th {
   vertical-align: top;
   border: 1px solid grey;
 }
-
+th#table-list div {
+  /* fix material-ui's menu item getting covered by other elements */
+  z-index: 2000;
+}
 .main-map {
   width: 99%;
   min-width: 400px;

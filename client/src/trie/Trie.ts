@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import Benchmark from "../util/benchmark";
 
 /** Unfortunately, This trie implementation in javascript is much slower than builtin map.

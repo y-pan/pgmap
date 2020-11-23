@@ -144,3 +144,38 @@ export function distinctArrayOf<T>(array: T[]): T[] {
   if (!array) return array;
   return SequentialSet.ofArray(array).values();
 }
+
+export function isNil(value: any): boolean {
+  return (
+    value === null ||
+    value === undefined ||
+    (typeof value === "number" && isNaN(value))
+  );
+}
+
+export function nonNil(value: any): boolean {
+  return !isNil(value);
+}
+
+export function isEmpty(value: any): boolean {
+  if (isNil(value)) return true; // covers null/undefined/NaN/number
+  switch (typeof value) {
+    case "string":
+      return !!value.trim();
+    case "object":
+      if (Array.isArray(value)) {
+        return isNil(value) || value.length === 0;
+      }
+      // json obj
+      for (let key in value) {
+        return false; // has key in it
+      }
+      return true;
+    default:
+      return false;
+  }
+}
+
+export function notEmpty(value: any): boolean {
+  return !isEmpty(value);
+}

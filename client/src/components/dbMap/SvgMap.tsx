@@ -35,7 +35,6 @@ import {
   XY,
 } from "./DataUtil";
 import { wrapText } from "./UiUtil";
-import { SequentialSet } from "../../util/SequentialSet";
 
 interface Props {
   schema: string;

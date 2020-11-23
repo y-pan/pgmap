@@ -131,6 +131,8 @@ function draw(
       .filter((tbName) => !!tbName);
 
     const tagetTableNameSet: Set<string> = new Set(targetTableNameArray);
+    focusTable && tagetTableNameSet.add(focusTable); // some table has no relationship at all, and focusTable won't appear in targetTableNameArray. So need to add it anyway to display it.
+
     filteredTables = tables
       .filter((tb) => tagetTableNameSet.has(tb.table_name))
       .sort((t1, t2) => {

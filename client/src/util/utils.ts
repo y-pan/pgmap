@@ -118,6 +118,21 @@ export function mapTransform<T, R>(
   return newMap;
 }
 
+export function mapFilter<T>(
+  map: SMap<T>,
+  predicate: (key: string, value: T) => boolean
+): SMap<T> {
+  if (!map) return map;
+  const filtered: SMap<T> = {};
+  for (let key in map) {
+    const value = map[key];
+    if (predicate(key, value)) {
+      filtered[key] = value;
+    }
+  }
+  return filtered;
+}
+
 export function timeit(func: Function, numOfRepeats: number = 1): void {
   const t0 = new Date().getTime();
   for (let i = 0; i < numOfRepeats; i++) {

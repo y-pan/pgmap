@@ -1,4 +1,4 @@
-import { Action } from "../actions/actionTypes";
+import { Action } from "../actions/actionUtil";
 import {
   searchActionFailed,
   searchActionRequested,

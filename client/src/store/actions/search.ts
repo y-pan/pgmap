@@ -1,4 +1,4 @@
-import { actionTypesCreatorsOf } from "./actionTypes";
+import { actionsOf } from "./actionUtil";
 
 const NAMESPACE = "Search";
 
@@ -14,4 +14,4 @@ export const {
     searchActionFailed,
   ],
   creators: [searchSaga, searchRequested, searchSucceeded, searchFailed],
-} = actionTypesCreatorsOf<any>(NAMESPACE, "search");
+} = actionsOf<any>(NAMESPACE, "search");

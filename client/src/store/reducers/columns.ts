@@ -1,5 +1,5 @@
 import { ColumnItem } from "../../api/type";
-import { Action } from "../actions/actionTypes";
+import { Action } from "../actions/actionUtil";
 import {
   getColumnsActionFailed,
   getColumnsActionRequested,

@@ -36,7 +36,7 @@ export function actionCreatorsOf<T>(actionTypes: string[]): ActionCreator<T>[] {
 /** @summary returns *_saga, *_requested, *_succeeded, *_failed; *_sagaCreator, *_requestedCreator, *_succeededCreator, *_failedCreator,
  *
  */
-export function actionTypesCreatorsOf<T>(
+export function actionsOf<T>(
   namespace: string,
   actionName: string
 ): { types: string[]; creators: ActionCreator<T>[] } {

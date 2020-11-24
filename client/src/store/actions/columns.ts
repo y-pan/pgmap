@@ -1,28 +1,28 @@
 import { ColumnItem } from "../../api/type";
-import { actionTypesOf } from "./actionTypes";
+import { actionTypesOf } from "./actionUtil";
 
-const NAMESPACE = 'Columns';
+const NAMESPACE = "Columns";
 
 export const [
   getColumnsActionSaga,
   getColumnsActionRequested,
   getColumnsActionSucceeded,
-  getColumnsActionFailed
-] = actionTypesOf(NAMESPACE, 'getColumns');
+  getColumnsActionFailed,
+] = actionTypesOf(NAMESPACE, "getColumns");
 
 export const getColumnsSaga = () => ({
-  type: getColumnsActionSaga
+  type: getColumnsActionSaga,
 });
 
 export const getColumnsRequested = () => ({
-  type: getColumnsActionRequested
+  type: getColumnsActionRequested,
 });
 
 export const getColumnsSucceeded = (payload: ColumnItem[]) => ({
   type: getColumnsActionSucceeded,
-  payload
+  payload,
 });
 
 export const getColumnsFailed = () => ({
-  type: getColumnsActionFailed
+  type: getColumnsActionFailed,
 });

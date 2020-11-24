@@ -1,5 +1,5 @@
 import { TableItem } from "../../api/type";
-import { Action, actionTypesCreatorsOf, actionTypesOf } from "./actionTypes";
+import { Action, actionsOf, actionTypesOf } from "./actionUtil";
 
 const NAMESPACE = "Tables";
 
@@ -39,7 +39,7 @@ export const {
     setFocusTableSucceeded,
     setFocusTableFailed,
   ],
-} = actionTypesCreatorsOf<string>(NAMESPACE, "setFocusTable");
+} = actionsOf<string>(NAMESPACE, "setFocusTable");
 
 export const {
   types: [
@@ -54,7 +54,7 @@ export const {
     unsetFocusTableSucceeded,
     unsetFocusTableFailed,
   ],
-} = actionTypesCreatorsOf<TableItem>(NAMESPACE, "unsetFocusTable");
+} = actionsOf<TableItem>(NAMESPACE, "unsetFocusTable");
 
 export const {
   types: [
@@ -69,4 +69,4 @@ export const {
     setQuerySucceeded,
     setQueryFailed,
   ],
-} = actionTypesCreatorsOf<string>(NAMESPACE, "setQuery");
+} = actionsOf<string>(NAMESPACE, "setQuery");

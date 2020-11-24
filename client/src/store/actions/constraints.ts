@@ -1,14 +1,14 @@
 import { ConstraintItem } from "../../api/type";
-import { actionTypesOf } from "./actionTypes";
+import { actionTypesOf } from "./actionUtil";
 
-const NAMESPACE = 'Constraints';
+const NAMESPACE = "Constraints";
 
 export const [
   getConstraintsActionSaga,
   getConstraintsActionRequested,
   getConstraintsActionSucceeded,
-  getConstraintsActionFailed
-] = actionTypesOf(NAMESPACE, 'getConstraints');
+  getConstraintsActionFailed,
+] = actionTypesOf(NAMESPACE, "getConstraints");
 
 export const getConstraintsSaga = () => ({
   type: getConstraintsActionSaga,
@@ -18,7 +18,7 @@ export const getConstraintsRequested = () => ({
 });
 export const getConstraintsSucceeded = (payload: ConstraintItem[]) => ({
   type: getConstraintsActionSucceeded,
-  payload
+  payload,
 });
 export const getConstraintsFailed = () => ({
   type: getConstraintsActionFailed,

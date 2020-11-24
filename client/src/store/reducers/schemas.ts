@@ -1,5 +1,5 @@
 import { SchemaItem } from "../../api/type";
-import { Action } from "../actions/actionTypes";
+import { Action } from "../actions/actionUtil";
 import {
   getSchemasActionFailed,
   getSchemasActionRequested,

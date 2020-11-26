@@ -39,6 +39,13 @@ export interface ColumnItem
   // So the index (0-base) is added, frontend only;
 }
 
+export enum DataTypes {
+  NUMBER = "NUMBER", // INT, BIGINT, FLOAT
+  STRING = "STRING", // CHAR, VARCHAR, TEXT
+  BOOLEAN = "BOOLEAN",
+  DATE = "DATE",
+  DATE_TIME = "DATE_TIME",
+}
 export interface ConstraintItem {
   table_name: string;
   constraint: string;

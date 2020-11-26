@@ -22,11 +22,13 @@ import {
 } from "../../store/actions/tables";
 import { useDispatch } from "react-redux";
 import {
+  addColumnNamesToConstrait,
   ColumnItemExtended,
+  ConstraintItemExtended,
   enrichColumnData,
   EnrichedTableData,
   enrichTableData,
-  friendship,
+  generateSelectJoinWhereQuery,
   getConstraintDrawData,
   indexColumnItemsMap,
   Margin,
@@ -80,14 +82,20 @@ function draw(
     return;
   }
 
+  let filteredTables: TableItem[] = tables;
+  let filteredConstraints: ConstraintItem[] = constraints;
+  let filteredColumns: ColumnItem[] = columns;
+
+  // goals:
+  let filteredTableData: any[];
+  let filteredConstraintData: any[];
+  let filteredColumnData: any[];
+
   // process tables, constraints, columns
   const t2Cons: SMap<ConstraintItem[]> = groupBy<
     ConstraintItem,
     ConstraintItem
   >(constraints, (constraint) => constraint.table_name); // -> A table's constraints holds relationship.
-
-  window.constraints = constraints;
-  window.t2Cons = t2Cons;
 
   const t2Cols: SMap<ColumnItem[]> = indexColumnItemsMap(
     groupBy<ColumnItem, ColumnItem>(columns, (column) => column.table_name)
@@ -98,8 +106,6 @@ function draw(
     (tableName, columns) => columns.length
   );
 
-  let filteredTables: TableItem[] = tables;
-  let filteredConstraints: ConstraintItem[] = constraints;
   const upstreamTableNames: Set<string> = new Set(); // tables holding relationship to focusTable. Displayed before focusTable
   const downstreamTableNames: Set<string> = new Set(); // tables where relationship owned by focusTable. Display after focusTable
 
@@ -186,14 +192,6 @@ function draw(
     MappingStrategy.USE_LATEST_ON_DUPLICATE_WARNED
   );
 
-  const { query, consExtended } = friendship(
-    // CONS
-    schema,
-    focusTable,
-    focusTable ? filteredConstraints : constraints, // if has focusTable, then only take those related, otherwise take all
-    t2Cols
-  );
-
   // columns
   const enrichedColumns: ColumnItemExtended[] = enrichColumnData(
     focusTable,
@@ -202,12 +200,23 @@ function draw(
     t2Cons
   );
 
-  let selectJoinQuery = query;
-  if (!selectJoinQuery) {
-    selectJoinQuery = focusTable ? `SELECT * FROM ${schema}.${focusTable}` : "";
-  }
+  // TODO: query to be generated somewhere else, like DbMapTHead.
+  //   Need to put to state: t2Cols;  consExtended.filter((con) => con.ref_table_name !== focusTable).
+  //   Make table > columns builder component, collect a map of: table -> {column, op: =, !=, <, >, in, like, value}
+  //   Use in generateSelectJoinWhereQuery
+  const consExtended: ConstraintItemExtended[] = addColumnNamesToConstrait(
+    focusTable ? filteredConstraints : constraints, // if has focusTable, then only take those related, otherwise take all
+    t2Cols
+  );
 
-  setQuery(selectJoinQuery); // display query outside svg
+  const query = generateSelectJoinWhereQuery(
+    schema,
+    focusTable,
+    consExtended.filter((con) => con.ref_table_name !== focusTable), // no join on upstream tables
+    t2Cols
+  );
+
+  setQuery(query); // display query outside svg
 
   // draw
   /**

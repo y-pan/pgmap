@@ -2,6 +2,7 @@ import {
   ColumnItem,
   ConstraintItem,
   ConstraintTypes,
+  DataTypes,
   TableItem,
   TableTypes,
 } from "../../api/type";
@@ -199,76 +200,98 @@ export interface FriendShipData {
   consExtended: ConstraintItemExtended[];
 }
 
-export function friendship(
-  schema: string,
-  focusTable: string,
-  constraints: ConstraintItem[],
+export enum WhereOps {
+  EQ = "=",
+  NE = "!=",
+  LT = "<",
+  LE = "<=",
+  GT = ">",
+  GE = ">=",
+  IN = "IN",
+  LIKE = "LIKE",
+  ILIKE = "ILIKE",
+}
+export interface WhereColumnValue {
+  table: string;
+  column: string;
+  op: WhereOps;
+  value: string | number;
+  dataType: DataTypes;
+}
+
+export function generateSelectJoinWhereQuery(
+  schema: string, // non-empty
+  focusTable: string, // non-empty
+  enrichedFkConstraints: ConstraintItemExtended[], // store in state   con.ref_table_name !== focusTable
+  t2Cols: SMap<ColumnItem[]>, // store in state,
+  whereData?: SMap<WhereColumnValue[]> // table -> column values
+): string {
+  // use enrichedFkConstraints to generate query string
+  let selectBuilder = new SelectColumnsBuilder();
+  if (!schema || !focusTable) {
+    return "";
+  }
+
+  // query requires a focus table
+  const focusTableAlias = `${focusTable}0`;
+  let fromQuery = `FROM ${schema}.${focusTable} ${focusTableAlias}`;
+
+  selectBuilder.add(
+    focusTable,
+    focusTableAlias,
+    t2Cols[focusTable].map((c) => c.column_name)
+  );
+
+  const joinQueries: string = enrichedFkConstraints
+    // .filter((con) => con.ref_table_name !== focusTable) // no join on upstream tables
+    .reduce((result, fk, i) => {
+      const rtableAlias = `${fk.ref_table_name}${i}`;
+      selectBuilder.add(
+        fk.ref_table_name,
+        rtableAlias,
+        t2Cols[fk.ref_table_name].map((c) => c.column_name)
+      );
+      const subfix = joinQuerySubfix(
+        focusTableAlias,
+        fk.columns_name,
+        rtableAlias,
+        fk.ref_columns_name
+      );
+      const joinQuery = subfix
+        ? `
+    LEFT JOIN ${schema}.${fk.ref_table_name} ${rtableAlias} on ${subfix}`
+        : "";
+      return (result += joinQuery);
+    }, "");
+
+  return `${selectBuilder.build()}
+    
+${fromQuery}${joinQueries}`;
+}
+
+export function addColumnNamesToConstrait(
+  constraints: ConstraintItem[], // filteredContstraints | allConstraints
   t2Cols: SMap<ColumnItem[]>
-): FriendShipData {
-  if (!schema || !constraints) return { query: "", consExtended: [] };
+): ConstraintItemExtended[] {
+  if (!constraints) return [];
 
   const fkConstraints = constraints.filter(
     (con) => con.constraint_type === ConstraintTypes.FOREIGN_KEY
   );
 
-  if (!fkConstraints) return { query: "", consExtended: [] };
+  if (!fkConstraints) return [];
 
-  const enrichedFkConstraints: ConstraintItemExtended[] = fkConstraints.map(
-    (fk) => ({
-      ...fk,
-      columns_name: columnOrdinalsToNames(
-        fk.columns_index,
-        t2Cols[fk.table_name]
-      ),
-      ref_columns_name: columnOrdinalsToNames(
-        fk.ref_columns_index,
-        t2Cols[fk.ref_table_name]
-      ),
-    })
-  );
-
-  // use enrichedFkConstraints to generate query string
-  let fullQuery = "";
-  let selectBuilder = new SelectColumnsBuilder();
-  if (focusTable) {
-    // query requires a focus table
-    const focusTableAlias = `${focusTable}0`;
-    let fromQuery = `FROM ${schema}.${focusTable} ${focusTableAlias}`;
-
-    selectBuilder.add(
-      focusTable,
-      focusTableAlias,
-      t2Cols[focusTable].map((c) => c.column_name)
-    );
-
-    const joinQueries: string = enrichedFkConstraints
-      .filter((con) => con.ref_table_name !== focusTable) // no join on upstream tables
-      .reduce((result, fk, i) => {
-        const rtableAlias = `${fk.ref_table_name}${i}`;
-        selectBuilder.add(
-          fk.ref_table_name,
-          rtableAlias,
-          t2Cols[fk.ref_table_name].map((c) => c.column_name)
-        );
-        const subfix = joinQuerySubfix(
-          focusTableAlias,
-          fk.columns_name,
-          rtableAlias,
-          fk.ref_columns_name
-        );
-        const joinQuery = subfix
-          ? `
-    LEFT JOIN ${schema}.${fk.ref_table_name} ${rtableAlias} on ${subfix}`
-          : "";
-        return (result += joinQuery);
-      }, "");
-
-    fullQuery = `${selectBuilder.build()}
-    
-${fromQuery}${joinQueries}`;
-  }
-
-  return { query: fullQuery, consExtended: enrichedFkConstraints };
+  return fkConstraints.map((fk) => ({
+    ...fk,
+    columns_name: columnOrdinalsToNames(
+      fk.columns_index,
+      t2Cols[fk.table_name]
+    ),
+    ref_columns_name: columnOrdinalsToNames(
+      fk.ref_columns_index,
+      t2Cols[fk.ref_table_name]
+    ),
+  }));
 }
 
 const COLUMN_TEXT_MARGIN_LEFT: number = 0;

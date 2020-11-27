@@ -1,5 +1,5 @@
 # kill port
-# kport 5000; kport 8001
+# kport 5000; kport 8001; kport 3001;
 
 cd ./server
 npm install
@@ -10,9 +10,7 @@ nohup node server.js &
 
 # npm start
 
-cd ..
-
-cd ./client
+cd ../client
 npm install
 npm run build
 # kill port

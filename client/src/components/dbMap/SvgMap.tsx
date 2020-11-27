@@ -28,7 +28,6 @@ import {
   enrichColumnData,
   EnrichedTableData,
   enrichTableData,
-  generateSelectJoinWhereQuery,
   getConstraintDrawData,
   indexColumnItemsMap,
   Margin,
@@ -37,6 +36,7 @@ import {
   XY,
 } from "./DataUtil";
 import { wrapText } from "./UiUtil";
+import { setQueryDataSucceeded } from "../../store/actions/calcs";
 
 interface Props {
   schema: string;
@@ -75,7 +75,10 @@ function draw(
   columns: ColumnItem[],
   constraints: ConstraintItem[],
   setFocusTable: (table: string) => any,
-  setQuery: (query: string) => void
+  setQueryData: (
+    t2Cols: SMap<ColumnItem[]>,
+    focusConstraints: ConstraintItemExtended[]
+  ) => void
 ) {
   if (!svgDom || !tables || !columns) {
     console.warn("Cannot draw!");
@@ -209,14 +212,18 @@ function draw(
     t2Cols
   );
 
-  const query = generateSelectJoinWhereQuery(
-    schema,
-    focusTable,
-    consExtended.filter((con) => con.ref_table_name !== focusTable), // no join on upstream tables
-    t2Cols
-  );
+  // const query = generateSelectJoinWhereQuery(
+  //   schema,
+  //   focusTable,
+  //   consExtended.filter((con) => con.ref_table_name !== focusTable), // no join on upstream tables
+  //   t2Cols
+  // );
 
-  setQuery(query); // display query outside svg
+  setQueryData(
+    focusTable && t2Cols,
+    focusTable &&
+      consExtended.filter((con) => con.ref_table_name !== focusTable)
+  );
 
   // draw
   /**
@@ -433,7 +440,16 @@ const SvgMap: React.FC<Props> = ({
             dispatch(setFocusTableSaga(newFocusTable));
             window.scrollTo(0, 0);
           },
-          (query) => dispatch(setQuerySucceeded(query))
+          (
+            t2Cols: SMap<ColumnItem[]>,
+            focusConstraints: ConstraintItemExtended[]
+          ) =>
+            dispatch(
+              setQueryDataSucceeded({
+                t2Cols,
+                focusConstraints,
+              })
+            )
         )
       }
     />

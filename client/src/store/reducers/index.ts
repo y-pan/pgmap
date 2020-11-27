@@ -4,6 +4,7 @@ import tables from "./tables";
 import columns from "./columns";
 import constraints from "./constraints";
 import search from "./search";
+import calcs from "./calcs";
 
 const rootReducer = combineReducers({
   schemas,
@@ -11,6 +12,7 @@ const rootReducer = combineReducers({
   columns,
   constraints,
   search,
+  calcs,
 });
 
 export type State = ReturnType<typeof rootReducer>;

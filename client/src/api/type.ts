@@ -17,6 +17,9 @@ interface hasColumnName {
   column_name: string;
 }
 
+interface hasDataType {
+  data_type: DataTypes;
+}
 interface HasIndex {
   index?: number;
 }
@@ -33,6 +36,7 @@ export interface ColumnItem
   extends hasTableSchema,
     hasTableName,
     hasColumnName,
+    hasDataType,
     HasIndex {
   ordinal_position: number; // ordinal_position (1-base) is needed to match foreign key column (stored using ordinal_position) to column name
   // but oridinal_position is not enough for UI display, as gap may exist in ordinal_position.
@@ -40,11 +44,45 @@ export interface ColumnItem
 }
 
 export enum DataTypes {
-  NUMBER = "NUMBER", // INT, BIGINT, FLOAT
-  STRING = "STRING", // CHAR, VARCHAR, TEXT
-  BOOLEAN = "BOOLEAN",
-  DATE = "DATE",
-  DATE_TIME = "DATE_TIME",
+  NUMERIC = "numeric",
+  INT = "integer",
+  BIGINT = "bigint",
+  SMALLINT = "smallint",
+  DOUBLE_PRECISION = "double precision",
+  MONEY = "money",
+  REAL = "real",
+
+  BOOLEAN = "boolean",
+
+  TEXT = "text",
+  CHAR = "char",
+  CHARACTER = "character",
+  NAME = "name",
+  VARCHAR = "character varying",
+
+  DATE = "date",
+  ABSTIME = "abstime",
+  TIMESTAME_WITH_TIME_ZONE = "timestamp with time zone",
+  TIMESTAME_WITHOUT_TIME_ZONE = "timestamp without time zone",
+  TIME_WITH_TIME_ZONE = "time with time zone",
+  TIME_WITHOUT_TIME_ZONE = "time without time zone",
+
+  JSON = "json",
+  JSONB = "jsonb",
+
+  UUID = "uuid",
+
+  OID = "oid",
+  REGCLASS = "regclass",
+  REGCONFIG = "regconfig",
+  REGDICTIONARY = "regdictionary",
+  REGNAMESPACE = "regnamespace",
+  REGOPER = "regoper",
+  REGOPERATOR = "regoperator",
+  REGPROC = "regproc",
+  REGPROCEDURE = "regprocedure",
+  REGROLE = "regrole",
+  REGTYPE = "regtype",
 }
 export interface ConstraintItem {
   table_name: string;

@@ -1,3 +1,6 @@
+# kill port
+# kport 5000; kport 8001
+
 cd ./server
 npm install
 npm run build

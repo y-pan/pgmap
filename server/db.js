@@ -55,6 +55,7 @@ async function fetchColumnsByTable(schema, table) {
   table_schema,
   table_name,
   column_name, 
+  data_type,
   ordinal_position
   FROM information_schema.columns 
   ${whereClause}

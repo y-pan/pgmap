@@ -1,16 +1,20 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { unsetFocusTableSucceeded } from "../../store/actions/tables";
-import { getFocusTable, getQuery } from "../../store/selectors/tables";
+import { getFocusTable } from "../../store/selectors/tables";
 import { Button } from "@material-ui/core";
 import Search from "../search/Search";
-
+import { getQueryData } from "../../store/selectors/calcs";
+import { getCurrent } from "../../store/selectors/schemas";
+import { generateSelectJoinWhereQuery } from "../dbMap/DataUtil";
+// todo: remove query out of store
 const DbMapTHead: React.FC = () => {
   const dispatch = useDispatch();
   const [isCopiedHidden, setIsCopiedHidden] = useState(true);
+  const schema = useSelector(getCurrent);
   const focusTable = useSelector(getFocusTable);
-  const query = useSelector(getQuery);
-
+  const [query, setQuery] = useState("");
+  const { t2Cols, focusConstraints } = useSelector(getQueryData);
   let setIsCopiedHiddenTimeout = useRef(undefined);
 
   const copyToClipboard = (): void => {
@@ -28,6 +32,18 @@ const DbMapTHead: React.FC = () => {
       setIsCopiedHidden(true);
     }, 2000);
   };
+
+  useEffect(() => {
+    if (schema && focusTable && t2Cols && focusConstraints) {
+      const newQuery = generateSelectJoinWhereQuery(
+        schema,
+        focusTable,
+        focusConstraints,
+        t2Cols
+      );
+      setQuery(newQuery);
+    }
+  }, [schema, focusTable, t2Cols, focusConstraints]);
 
   return (
     <thead>

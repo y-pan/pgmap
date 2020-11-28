@@ -55,18 +55,3 @@ export const {
     unsetFocusTableFailed,
   ],
 } = actionsOf<TableItem>(NAMESPACE, "unsetFocusTable");
-
-export const {
-  types: [
-    setQueryActionSaga,
-    setQueryActionRequested,
-    setQueryActionSucceeded,
-    setQueryActionFailed,
-  ],
-  creators: [
-    setQuerySaga,
-    setQueryRequested,
-    setQuerySucceeded,
-    setQueryFailed,
-  ],
-} = actionsOf<string>(NAMESPACE, "setQuery");

@@ -16,10 +16,7 @@ import {
   timed,
   toDistinctMap,
 } from "../../util/utils";
-import {
-  setFocusTableSaga,
-  setQuerySucceeded,
-} from "../../store/actions/tables";
+import { setFocusTableSaga } from "../../store/actions/tables";
 import { useDispatch } from "react-redux";
 import {
   addColumnNamesToConstrait,

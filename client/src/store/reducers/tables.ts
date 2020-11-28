@@ -7,7 +7,6 @@ import {
   setFocusTableActionFailed,
   setFocusTableActionRequested,
   setFocusTableActionSucceeded,
-  setQueryActionSucceeded,
   unsetFocusTableActionSucceeded,
 } from "../actions/tables";
 import { LoadingStatus } from "./types";
@@ -74,11 +73,6 @@ const tablesReducer = (
         ...state,
         focusTable: undefined,
         focusTableStatus: LoadingStatus.INITIAL,
-      };
-    case setQueryActionSucceeded:
-      return {
-        ...state,
-        query: action.payload,
       };
     default:
       return state;

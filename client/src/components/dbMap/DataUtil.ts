@@ -9,6 +9,7 @@ import {
 import { compare, groupBy, SMap } from "../../util/utils";
 import SelectColumnsBuilder from "./SelectColumnsBuilder";
 import { CELL_HEIGHT, CELL_WIDTH, TABLE_HSPACE, TABLE_VSPACE } from "./SvgMap";
+import WhereColumnValueBuilder from "./WhereColumnValueBuilder";
 
 export interface Margin {
   top: number;
@@ -208,15 +209,20 @@ export enum WhereOps {
   GT = ">",
   GE = ">=",
   IN = "IN",
-  LIKE = "LIKE",
-  ILIKE = "ILIKE",
+  NOT_IN = "NOT IN",
+  LIKE = "LIKE", // For non-numeric DataTypes
+  ILIKE = "ILIKE", // For non-numeric DataTypes
+  NOT_LIKE = "NOT LIKE", // For non-numeric DataTypes
+  NOT_ILIKE = "NOT ILIKE", // For non-numeric DataTypes
 }
 export interface WhereColumnValue {
+  // Only care about <table>.<column> <op> [<value>
+  // This alone can't handle AND/OR logic, and will be somewhere else.
   table: string;
   column: string;
-  op: WhereOps;
-  value: string | number;
-  dataType: DataTypes;
+  op: WhereOps; // Examples: =, >, <, in, like, ilike
+  value: string | number | string[] | number[]; // Examples: 1, "one", [1,3,4], ["male", "female", "unknown"]
+  dataType: DataTypes; // To decide if value to be single-quoted (for non-numeric type), or non-quoted (for numeric type)
 }
 
 export function generateSelectJoinWhereQuery(
@@ -224,17 +230,17 @@ export function generateSelectJoinWhereQuery(
   focusTable: string, // non-empty
   enrichedFkConstraints: ConstraintItemExtended[], // store in state   con.ref_table_name !== focusTable
   t2Cols: SMap<ColumnItem[]>, // store in state,
-  whereData?: SMap<WhereColumnValue[]> // table -> column values
+  whereColumnValue?: SMap<WhereColumnValue[]> // table -> column values
 ): string {
   // use enrichedFkConstraints to generate query string
-  let selectBuilder = new SelectColumnsBuilder();
+  const selectBuilder = new SelectColumnsBuilder();
   if (!schema || !focusTable) {
     return "";
   }
 
   // query requires a focus table
   const focusTableAlias = `${focusTable}0`;
-  let fromQuery = `FROM ${schema}.${focusTable} ${focusTableAlias}`;
+  let fromClause = `FROM ${schema}.${focusTable} ${focusTableAlias}`;
 
   selectBuilder.add(
     focusTable,
@@ -242,7 +248,7 @@ export function generateSelectJoinWhereQuery(
     t2Cols[focusTable].map((c) => c.column_name)
   );
 
-  const joinQueries: string = enrichedFkConstraints
+  const joinClauses: string = enrichedFkConstraints
     // .filter((con) => con.ref_table_name !== focusTable) // no join on upstream tables
     .reduce((result, fk, i) => {
       const rtableAlias = `${fk.ref_table_name}${i}`;
@@ -258,15 +264,48 @@ export function generateSelectJoinWhereQuery(
         fk.ref_columns_name
       );
       const joinQuery = subfix
-        ? `
-    LEFT JOIN ${schema}.${fk.ref_table_name} ${rtableAlias} on ${subfix}`
+        ? `    LEFT JOIN ${schema}.${fk.ref_table_name} ${rtableAlias} ON ${subfix}\n`
         : "";
       return (result += joinQuery);
     }, "");
 
-  return `${selectBuilder.build()}
-    
-${fromQuery}${joinQueries}`;
+  const selectClause = selectBuilder.build();
+
+  // faking where start =====
+  // whereColumnValue = {
+  //   address: [
+  //     {
+  //       table: "address",
+  //       column: "id",
+  //       op: WhereOps.NE,
+  //       value: 21,
+  //       dataType: DataTypes.BIGINT,
+  //     },
+  //     {
+  //       table: "address",
+  //       column: "profile_id",
+  //       op: WhereOps.IN,
+  //       value: [6, 7, 8, 9, 10],
+  //       dataType: DataTypes.BIGINT,
+  //     },
+  //   ],
+  //   province: [
+  //     {
+  //       table: "province",
+  //       column: "name",
+  //       op: WhereOps.IN,
+  //       value: ["AB"],
+  //       dataType: DataTypes.VARCHAR,
+  //     },
+  //   ],
+  // };
+  // faking where end =====
+  const whereClause = new WhereColumnValueBuilder()
+    .tableAlias(selectBuilder.getTableAlias())
+    .tableColumnValues(whereColumnValue)
+    .build();
+
+  return `${selectClause}\n${fromClause}\n${joinClauses}\n${whereClause}`;
 }
 
 export function addColumnNamesToConstrait(

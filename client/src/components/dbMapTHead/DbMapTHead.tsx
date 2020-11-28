@@ -14,6 +14,8 @@ const DbMapTHead: React.FC = () => {
   const schema = useSelector(getCurrent);
   const focusTable = useSelector(getFocusTable);
   const [query, setQuery] = useState("");
+  const [where, setWhere] = useState({});
+
   const { t2Cols, focusConstraints } = useSelector(getQueryData);
   let setIsCopiedHiddenTimeout = useRef(undefined);
 
@@ -39,9 +41,12 @@ const DbMapTHead: React.FC = () => {
         schema,
         focusTable,
         focusConstraints,
-        t2Cols
+        t2Cols,
+        where
       );
       setQuery(newQuery);
+    } else {
+      setQuery("");
     }
   }, [schema, focusTable, t2Cols, focusConstraints]);
 

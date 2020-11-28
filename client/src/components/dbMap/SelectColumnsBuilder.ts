@@ -1,3 +1,5 @@
+import { SMap } from "../../util/utils";
+
 interface TableItem {
   name: string;
   alias: string;
@@ -5,14 +7,14 @@ interface TableItem {
 }
 
 class SelectColumnsBuilder {
-  private tables: Set<string> = new Set();
+  private table2Alias: SMap<string> = {}; // A set is enough for SelectColumnBuilder, but a map is also convenient for whereBuilder
   private tableItems: TableItem[] = [];
 
   add(tableName, tableAlias, columns: string[]): SelectColumnsBuilder {
-    if (this.tables.has(tableName)) {
+    if (!!this.table2Alias[tableName]) {
       return; // no need of duplication
     }
-    this.tables.add(tableName);
+    this.table2Alias[tableName] = tableAlias;
     this.tableItems.push({
       name: tableName,
       alias: tableAlias,
@@ -34,15 +36,17 @@ class SelectColumnsBuilder {
     );
   }
 
+  getTableAlias(): SMap<string> {
+    // useful for whereColumn builder
+    return this.table2Alias;
+  }
+
   build(): string {
     const query = this.tableItems.map(({ name, alias, columns }) =>
       this.columnQueryOf(name, alias, columns)
     ).join(`,
     `);
-    return query
-      ? `SELECT 
-    ${query}`
-      : "";
+    return query ? `SELECT\n    ${query}` : "";
   }
 }
 

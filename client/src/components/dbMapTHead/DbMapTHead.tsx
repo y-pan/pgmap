@@ -4,20 +4,21 @@ import { unsetFocusTableSucceeded } from "../../store/actions/tables";
 import { getFocusTable } from "../../store/selectors/tables";
 import { Button } from "@material-ui/core";
 import Search from "../search/Search";
-import { getQueryData } from "../../store/selectors/calcs";
+import { getQueryData, getWhereData } from "../../store/selectors/calcs";
 import { getCurrent } from "../../store/selectors/schemas";
 import { generateSelectJoinWhereQuery } from "../dbMap/DataUtil";
+import WhereBuilder from "../whereBuilder/WhereBuilder";
 // todo: remove query out of store
 const DbMapTHead: React.FC = () => {
   const dispatch = useDispatch();
-  const [isCopiedHidden, setIsCopiedHidden] = useState(true);
   const schema = useSelector(getCurrent);
   const focusTable = useSelector(getFocusTable);
-  const [query, setQuery] = useState("");
-  const [where, setWhere] = useState({});
-
   const { t2Cols, focusConstraints } = useSelector(getQueryData);
-  let setIsCopiedHiddenTimeout = useRef(undefined);
+  const whereData = useSelector(getWhereData);
+
+  const [query, setQuery] = useState("");
+  const [isCopiedHidden, setIsCopiedHidden] = useState(true);
+  const setIsCopiedHiddenTimeout = useRef(undefined);
 
   const copyToClipboard = (): void => {
     if (!query) return;
@@ -42,13 +43,13 @@ const DbMapTHead: React.FC = () => {
         focusTable,
         focusConstraints,
         t2Cols,
-        where
+        whereData
       );
       setQuery(newQuery);
     } else {
       setQuery("");
     }
-  }, [schema, focusTable, t2Cols, focusConstraints]);
+  }, [schema, whereData, focusTable, t2Cols, focusConstraints]);
 
   return (
     <thead>
@@ -77,14 +78,9 @@ const DbMapTHead: React.FC = () => {
           <pre className={"copied " + (isCopiedHidden ? "hidden" : "")}>
             Copied!
           </pre>
-          {/* <Button
-                disabled={!query}
-                onClick={copyToClipboard}
-                color="primary"
-                style={{ display: "inline", verticalAlign: "inherit" }}
-              >
-                Copy query
-              </Button> */}
+        </th>
+        <th>
+          <WhereBuilder />
         </th>
       </tr>
     </thead>

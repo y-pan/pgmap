@@ -17,7 +17,7 @@ const DbMap: React.FC<{}> = () => {
             <td>
               <TableList />
             </td>
-            <td>
+            <td colSpan={2}>
               <SchemaMap />
             </td>
           </tr>

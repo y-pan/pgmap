@@ -16,3 +16,5 @@ export const getQueryDataFailed = ({ calcs }: State) =>
 export const getQueryDataRequested = ({ calcs }: State) =>
   calcs.focusConstraintsStatus === LoadingStatus.REQUESTED ||
   calcs.t2ColsStatus === LoadingStatus.REQUESTED;
+
+export const getWhereData = ({ calcs }: State) => calcs.whereData;

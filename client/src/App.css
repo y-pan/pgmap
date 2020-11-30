@@ -41,10 +41,11 @@ th#table-list div {
   padding-top: 12px;
   padding-left: 12px;
   padding-right: 12px;
-  min-width: 500px;
+  min-width: 400px;
 }
 
 #query {
+  font-size: 12px;
   width: 100%;
   display: block;
   border-radius: 5px;

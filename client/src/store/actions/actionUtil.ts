@@ -13,8 +13,11 @@ export function actionTypesOf(namespace: string, actionName: string): string[] {
 
 export type ActionCreator<T> = (payload?: T) => Action<T>;
 
-export function actionTypeOf(namespace: string, actionName: string): string {
-  return `[${namespace}] ${actionName}`; // simple action
+export function simpleActionTypeOf(
+  namespace: string,
+  actionName: string
+): string {
+  return `[${namespace}] ${actionName}_simple`; // no async, no saga
 }
 
 export function actionCreatorsOf<T>(actionTypes: string[]): ActionCreator<T>[] {
@@ -33,6 +36,11 @@ export function actionCreatorsOf<T>(actionTypes: string[]): ActionCreator<T>[] {
   return [saga, requested, succeeded, failed];
 }
 
+export function simpleActionCreatorOf<T>(actionType: string): ActionCreator<T> {
+  const simpleCreator = (payload?: T) => ({ type: actionType, payload });
+  return simpleCreator;
+}
+
 /** @summary returns *_saga, *_requested, *_succeeded, *_failed; *_sagaCreator, *_requestedCreator, *_succeededCreator, *_failedCreator,
  *
  */
@@ -45,6 +53,11 @@ export function actionsOf<T>(
   return { types, creators };
 }
 
+export function simpleActionOf<T>(namespace: string, actionName: string) {
+  const actionType: string = simpleActionTypeOf(namespace, actionName);
+  const actionCreator: ActionCreator<T> = simpleActionCreatorOf<T>(actionType);
+  return { type: actionType, creator: actionCreator };
+}
 export interface Action<T> {
   type: string;
   payload?: T;

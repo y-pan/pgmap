@@ -271,35 +271,6 @@ export function generateSelectJoinWhereQuery(
 
   const selectClause = selectBuilder.build();
 
-  // faking where start =====
-  // whereColumnValue = {
-  //   address: [
-  //     {
-  //       table: "address",
-  //       column: "id",
-  //       op: WhereOps.NE,
-  //       value: 21,
-  //       dataType: DataTypes.BIGINT,
-  //     },
-  //     {
-  //       table: "address",
-  //       column: "profile_id",
-  //       op: WhereOps.IN,
-  //       value: [6, 7, 8, 9, 10],
-  //       dataType: DataTypes.BIGINT,
-  //     },
-  //   ],
-  //   province: [
-  //     {
-  //       table: "province",
-  //       column: "name",
-  //       op: WhereOps.IN,
-  //       value: ["AB"],
-  //       dataType: DataTypes.VARCHAR,
-  //     },
-  //   ],
-  // };
-  // faking where end =====
   const whereClause = new WhereColumnValueBuilder()
     .tableAlias(selectBuilder.getTableAlias())
     .tableColumnValues(whereColumnValue)

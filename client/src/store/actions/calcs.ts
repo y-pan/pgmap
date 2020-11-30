@@ -1,7 +1,10 @@
 import { ColumnItem } from "../../api/type";
-import { ConstraintItemExtended } from "../../components/dbMap/DataUtil";
+import {
+  ConstraintItemExtended,
+  WhereColumnValue,
+} from "../../components/dbMap/DataUtil";
 import { SMap } from "../../util/utils";
-import { actionsOf } from "./actionUtil";
+import { actionsOf, simpleActionOf } from "./actionUtil";
 
 const NAMESPACE = "Calcs";
 
@@ -22,3 +25,13 @@ export const {
   t2Cols: SMap<ColumnItem[]>;
   focusConstraints: ConstraintItemExtended[];
 }>(NAMESPACE, "setQueryData");
+
+export const {
+  type: setWhereDataAction,
+  creator: setWhereData,
+} = simpleActionOf<SMap<WhereColumnValue[]>>(NAMESPACE, "setWhereData");
+
+export const {
+  type: unsetWhereDataAction,
+  creator: unsetWhereData,
+} = simpleActionOf<void>(NAMESPACE, "unsetWhereData");

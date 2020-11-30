@@ -15,7 +15,7 @@ const WhereBuilder: React.FC = () => {
   if (!focusTable || !whereableT2Cols) return null;
 
   const tables = Object.keys(whereableT2Cols);
-  const useDummy = true;
+  const useDummy = false;
 
   const dummyWhereColumnValue = {
     address: [

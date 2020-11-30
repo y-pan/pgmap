@@ -6,6 +6,7 @@ import {
   TableItem,
   TableTypes,
 } from "../../api/type";
+import { asArray } from "../../util/arrayUtil";
 import { compare, groupBy, SMap } from "../../util/utils";
 import SelectColumnsBuilder from "./SelectColumnsBuilder";
 import { CELL_HEIGHT, CELL_WIDTH, TABLE_HSPACE, TABLE_VSPACE } from "./SvgMap";
@@ -245,7 +246,7 @@ export function generateSelectJoinWhereQuery(
   selectBuilder.add(
     focusTable,
     focusTableAlias,
-    t2Cols[focusTable].map((c) => c.column_name)
+    asArray(t2Cols[focusTable]).map((c) => c.column_name)
   );
 
   const joinClauses: string = enrichedFkConstraints

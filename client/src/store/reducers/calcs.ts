@@ -15,16 +15,16 @@ import {
 import { LoadingStatus } from "./types";
 
 export interface CalcsState {
-  t2Cols: SMap<ColumnItem[]>;
-  t2ColsStatus: LoadingStatus;
+  whereableT2Cols: SMap<ColumnItem[]>; // It should only have focusTable & downsteamTables, and WhereBuilder relies on it.
+  whereableT2ColsStatus: LoadingStatus;
   focusConstraints: ConstraintItemExtended[];
   focusConstraintsStatus: LoadingStatus;
   whereData: SMap<WhereColumnValue[]>;
 }
 
 const initialState: CalcsState = {
-  t2Cols: {},
-  t2ColsStatus: LoadingStatus.INITIAL,
+  whereableT2Cols: {},
+  whereableT2ColsStatus: LoadingStatus.INITIAL,
   focusConstraints: [],
   focusConstraintsStatus: LoadingStatus.INITIAL,
   whereData: {},
@@ -38,24 +38,24 @@ const calcsReducer = (
     case setQueryDataActionRequested:
       return {
         ...state,
-        t2Cols: {},
-        t2ColsStatus: LoadingStatus.REQUESTED,
+        whereableT2Cols: {},
+        whereableT2ColsStatus: LoadingStatus.REQUESTED,
         focusConstraints: [],
         focusConstraintsStatus: LoadingStatus.REQUESTED,
       };
     case setQueryDataActionSucceeded:
       return {
         ...state,
-        t2Cols: action.payload.t2Cols,
-        t2ColsStatus: LoadingStatus.SUCCEEDED,
+        whereableT2Cols: action.payload.t2Cols,
+        whereableT2ColsStatus: LoadingStatus.SUCCEEDED,
         focusConstraints: action.payload.focusConstraints,
         focusConstraintsStatus: LoadingStatus.SUCCEEDED,
       };
     case setQueryDataActionFailed:
       return {
         ...state,
-        t2Cols: {},
-        t2ColsStatus: LoadingStatus.FAILED,
+        whereableT2Cols: {},
+        whereableT2ColsStatus: LoadingStatus.FAILED,
         focusConstraints: [],
         focusConstraintsStatus: LoadingStatus.FAILED,
       };

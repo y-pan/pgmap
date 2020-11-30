@@ -13,7 +13,7 @@ const DbMapTHead: React.FC = () => {
   const dispatch = useDispatch();
   const schema = useSelector(getCurrent);
   const focusTable = useSelector(getFocusTable);
-  const { t2Cols, focusConstraints } = useSelector(getQueryData);
+  const { whereableT2Cols, focusConstraints } = useSelector(getQueryData);
   const whereData = useSelector(getWhereData);
 
   const [query, setQuery] = useState("");
@@ -37,19 +37,19 @@ const DbMapTHead: React.FC = () => {
   };
 
   useEffect(() => {
-    if (schema && focusTable && t2Cols && focusConstraints) {
+    if (schema && focusTable && whereableT2Cols && focusConstraints) {
       const newQuery = generateSelectJoinWhereQuery(
         schema,
         focusTable,
         focusConstraints,
-        t2Cols,
+        whereableT2Cols,
         whereData
       );
       setQuery(newQuery);
     } else {
       setQuery("");
     }
-  }, [schema, whereData, focusTable, t2Cols, focusConstraints]);
+  }, [schema, whereData, focusTable, whereableT2Cols, focusConstraints]);
 
   return (
     <thead>

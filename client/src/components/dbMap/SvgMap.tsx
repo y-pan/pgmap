@@ -10,6 +10,7 @@ import * as d3 from "d3";
 import {
   compare,
   groupBy,
+  mapFilter,
   MappingStrategy,
   mapTransform,
   SMap,
@@ -71,8 +72,8 @@ function draw(
   tables: TableItem[],
   columns: ColumnItem[],
   constraints: ConstraintItem[],
-  setFocusTable: (table: string) => any,
-  setQueryData: (
+  onSetFocusTable: (table: string) => any,
+  onSetQueryData: (
     t2Cols: SMap<ColumnItem[]>,
     focusConstraints: ConstraintItemExtended[]
   ) => void
@@ -209,15 +210,12 @@ function draw(
     t2Cols
   );
 
-  // const query = generateSelectJoinWhereQuery(
-  //   schema,
-  //   focusTable,
-  //   consExtended.filter((con) => con.ref_table_name !== focusTable), // no join on upstream tables
-  //   t2Cols
-  // );
-
-  setQueryData(
-    focusTable && t2Cols,
+  onSetQueryData(
+    focusTable &&
+      mapFilter(
+        t2Cols,
+        (table) => table === focusTable || downstreamTableNames.has(table) // only need whereable tables: focusTable & downstream tables
+      ),
     focusTable &&
       consExtended.filter((con) => con.ref_table_name !== focusTable)
   );
@@ -281,7 +279,7 @@ function draw(
     .on("click", function (event, d) {
       event.stopPropagation();
       if (focusTable !== d.name) {
-        setFocusTable(d.name);
+        onSetFocusTable(d.name);
       }
     });
 
@@ -302,7 +300,7 @@ function draw(
     .on("click", function (event, d) {
       event.stopPropagation();
       if (focusTable !== d.name) {
-        setFocusTable(d.name);
+        onSetFocusTable(d.name);
       }
     });
 

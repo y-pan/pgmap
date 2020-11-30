@@ -11,11 +11,11 @@ const WhereBuilder: React.FC = () => {
   const dispatch = useDispatch();
 
   const focusTable = useSelector(getFocusTable);
-  const { t2Cols, focusConstraints } = useSelector(getQueryData);
-  if (!focusTable || !t2Cols) return null;
+  const { whereableT2Cols, focusConstraints } = useSelector(getQueryData);
+  if (!focusTable || !whereableT2Cols) return null;
 
-  const tables = Object.keys(t2Cols);
-  const useDummy = false;
+  const tables = Object.keys(whereableT2Cols);
+  const useDummy = true;
 
   const dummyWhereColumnValue = {
     address: [

@@ -225,12 +225,12 @@ export function allWhereOps() {
     WhereOps.LE,
     WhereOps.GT,
     WhereOps.GE,
-    WhereOps.IN,
-    WhereOps.NOT_IN,
-    WhereOps.LIKE,
-    WhereOps.NOT_LIKE,
     WhereOps.ILIKE,
+    WhereOps.LIKE,
+    WhereOps.IN,
     WhereOps.NOT_ILIKE,
+    WhereOps.NOT_LIKE,
+    WhereOps.NOT_IN,
   ];
 }
 export interface WhereColumnValue {

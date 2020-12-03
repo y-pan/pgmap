@@ -14,7 +14,7 @@ const DbMapTHead: React.FC = () => {
   const focusTable = useSelector(getFocusTable);
   const { whereableT2Cols, focusConstraints } = useSelector(getQueryData);
   const whereData = useSelector(getWhereData);
-  console.log("where data", whereData);
+  // console.log("where data", whereData);
   const [query, setQuery] = useState("");
   const [isCopiedHidden, setIsCopiedHidden] = useState(true);
   const setIsCopiedHiddenTimeout = useRef(undefined);

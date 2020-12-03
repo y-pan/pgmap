@@ -1,11 +1,4 @@
-import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormHelperText,
-} from "@material-ui/core";
-import { select } from "d3";
+import { FormControl, Select, MenuItem } from "@material-ui/core";
 import React, { useState } from "react";
 import { allWhereOps, WhereOps } from "../dbMap/DataUtil";
 
@@ -14,7 +7,8 @@ interface Props {
 }
 
 const OpSelect: React.FC<Props> = ({ onSelect }) => {
-  const [selected, setSelected] = useState(0);
+  const [allOps] = useState(allWhereOps());
+  const [selected, setSelected] = useState(allOps.indexOf(WhereOps.ILIKE));
 
   return (
     <FormControl>
@@ -29,7 +23,7 @@ const OpSelect: React.FC<Props> = ({ onSelect }) => {
         //   onSelect((menuItem as any).props.children);
         // }}
       >
-        {allWhereOps().map((op, index) => (
+        {allOps.map((op, index) => (
           <MenuItem
             dense
             key={index}

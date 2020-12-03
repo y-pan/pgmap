@@ -39,8 +39,8 @@ class WhereColumnBuilderMenu extends React.Component<Props, States> {
 
   show(column: ColumnItemExtended, x: number, y: number): void {
     this.setState({
-      x: x, //+ window.scrollX,
-      y: y, // + window.scrollY,
+      x: x + window.scrollX,
+      y: y + window.scrollY,
       column,
       isHidden: false,
       op: WhereOps.EQ,

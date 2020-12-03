@@ -138,10 +138,11 @@ rect.column-fk {
 }
 
 .whereColumnMenu {
-  min-width: 400px;
-  min-height: 250px;
-  max-width: 800px;
-  max-height: 800px;
+  min-width: 200px;
+  min-height: 50px;
+  max-width: 600px;
+  max-height: 200px;
+  position: absolute;
   /* padding: 10px; */
   /* z-index: 3000; */
   background-color: rgb(199, 222, 163);

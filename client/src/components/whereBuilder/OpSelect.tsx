@@ -1,6 +1,6 @@
 import { FormControl, Select, MenuItem } from "@material-ui/core";
 import React, { useState } from "react";
-import { allWhereOps, WhereOps } from "../dbMap/DataUtil";
+import { allWhereOps, DEFAULT_OP, WhereOps } from "../dbMap/DataUtil";
 
 interface Props {
   onSelect: (op: WhereOps) => void;
@@ -8,7 +8,7 @@ interface Props {
 
 const OpSelect: React.FC<Props> = ({ onSelect }) => {
   const [allOps] = useState(allWhereOps());
-  const [selected, setSelected] = useState(allOps.indexOf(WhereOps.ILIKE));
+  const [selected, setSelected] = useState(allOps.indexOf(DEFAULT_OP));
 
   return (
     <FormControl>

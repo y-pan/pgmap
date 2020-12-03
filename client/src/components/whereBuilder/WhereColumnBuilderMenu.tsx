@@ -4,6 +4,7 @@ import WithX from "../../containers/WithX/WithX";
 import { isNil, nonNil } from "../../util/utils";
 import {
   ColumnItemExtended,
+  DEFAULT_OP,
   WhereColumnValue,
   WhereOps,
 } from "../dbMap/DataUtil";
@@ -32,7 +33,7 @@ class WhereColumnBuilderMenu extends React.Component<Props, States> {
       x: 0,
       y: 0,
       isHidden: true,
-      op: WhereOps.EQ,
+      op: DEFAULT_OP,
       value: "",
     };
   }
@@ -43,7 +44,6 @@ class WhereColumnBuilderMenu extends React.Component<Props, States> {
       y: y + window.scrollY,
       column,
       isHidden: false,
-      op: WhereOps.EQ,
       value: "",
       error: "",
     });

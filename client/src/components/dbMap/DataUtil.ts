@@ -225,7 +225,7 @@ export function allWhereOps() {
     WhereOps.LE,
     WhereOps.GT,
     WhereOps.GE,
-    WhereOps.ILIKE,
+    WhereOps.ILIKE, // NOT for numeric
     WhereOps.LIKE,
     WhereOps.IN,
     WhereOps.NOT_ILIKE,
@@ -233,6 +233,9 @@ export function allWhereOps() {
     WhereOps.NOT_IN,
   ];
 }
+
+export const DEFAULT_OP = WhereOps.EQ;
+
 export interface WhereColumnValue {
   // Only care about <table>.<column> <op> [<value>
   // This alone can't handle AND/OR logic, and will be somewhere else.

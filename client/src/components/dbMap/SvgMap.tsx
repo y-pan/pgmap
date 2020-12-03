@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
   ColumnItem,
   ConstraintItem,
@@ -34,7 +34,13 @@ import {
   XY,
 } from "./DataUtil";
 import { wrapText } from "./UiUtil";
-import { setQueryDataSucceeded } from "../../store/actions/calcs";
+import {
+  setQueryDataSucceeded,
+  setTableWhereData,
+  setWhereData,
+} from "../../store/actions/calcs";
+import WhereColumnBuilderMenu from "../whereBuilder/WhereColumnBuilderMenu";
+import { Ref } from "react";
 
 interface Props {
   schema: string;
@@ -67,15 +73,19 @@ window.d3 = d3;
 function draw(
   svgWidth: number,
   svgDom: SVGElement,
-  schema: string,
   focusTable: string | undefined,
   tables: TableItem[],
   columns: ColumnItem[],
   constraints: ConstraintItem[],
-  onSetFocusTable: (table: string) => any,
+  onSetFocusTable: (table: string) => void,
   onSetQueryData: (
     t2Cols: SMap<ColumnItem[]>,
     focusConstraints: ConstraintItemExtended[]
+  ) => void,
+  onRightClickWhereableColumn: (
+    x: number,
+    y: number,
+    column: ColumnItemExtended
   ) => void
 ) {
   if (!svgDom || !tables || !columns) {
@@ -85,12 +95,6 @@ function draw(
 
   let filteredTables: TableItem[] = tables;
   let filteredConstraints: ConstraintItem[] = constraints;
-  let filteredColumns: ColumnItem[] = columns;
-
-  // goals:
-  let filteredTableData: any[];
-  let filteredConstraintData: any[];
-  let filteredColumnData: any[];
 
   // process tables, constraints, columns
   const t2Cons: SMap<ConstraintItem[]> = groupBy<
@@ -313,19 +317,55 @@ function draw(
     .join("rect")
     .classed("column-name", true)
     .classed("column-fk", (d) => d.cons.has(ConstraintTypes.FOREIGN_KEY))
+    .classed(
+      "pointer",
+      (d) =>
+        focusTable &&
+        (focusTable === d.table_name || downstreamTableNames.has(d.table_name))
+    )
     .attr("x", (d) => d.x)
     .attr("y", (d) => d.y - CELL_HEIGHT)
     .attr("width", CELL_WIDTH)
-    .attr("height", CELL_HEIGHT);
+    .attr("height", CELL_HEIGHT)
+    .on("contextmenu", function (event, d) {
+      event.stopPropagation();
+      event.preventDefault();
+      if (!focusTable) return;
+      if (
+        d.table_name === focusTable ||
+        downstreamTableNames.has(d.table_name)
+      ) {
+        const { x, y } = event.target.getBoundingClientRect();
+        onRightClickWhereableColumn(x, y, d);
+      }
+    });
 
   gColumn
     .selectAll("text.column-name")
     .data(enrichedColumns)
     .join("text")
     .classed("column-name", true)
+    .classed(
+      "pointer",
+      (d) =>
+        focusTable &&
+        (focusTable === d.table_name || downstreamTableNames.has(d.table_name))
+    )
     .attr("x", (d) => d.x + CELL_TEXT_PADDING_LEFT)
     .attr("y", (d) => d.y + CELL_TEXT_HEIGHT_ADJUSTMENT)
-    .text((d) => wrapText(d.text, CELL_TEXT_FONT, CELL_TEXT_WIDTH));
+    .text((d) => wrapText(d.text, CELL_TEXT_FONT, CELL_TEXT_WIDTH))
+    .on("contextmenu", function (event, d) {
+      event.stopPropagation();
+      event.preventDefault();
+      if (!focusTable) return;
+      if (
+        d.table_name === focusTable ||
+        downstreamTableNames.has(d.table_name)
+      ) {
+        const { x, y } = event.target.getBoundingClientRect();
+        onRightClickWhereableColumn(x, y, d);
+      }
+    });
 
   // ------ draw db constraints -------
   // path marker def: arrow
@@ -412,42 +452,68 @@ const SvgMap: React.FC<Props> = ({
   constraints,
 }) => {
   const dispatch = useDispatch();
+  const builderRef: Ref<WhereColumnBuilderMenu> = useRef();
   // calculate proper width
   const leftList = document.getElementById("table-list");
   let leftListWidth = leftList ? leftList.clientWidth : 0; /* hardcoded */
   let availableWidth = window.innerWidth - leftListWidth - 100; /* margine */
   const svgWidth = Math.max(availableWidth, 500 /* hardcoded min width */);
 
+  const onSetFocusTable = (newFocusTable) => {
+    dispatch(setFocusTableSaga(newFocusTable));
+    window.scrollTo(0, 0);
+  };
+
+  const onSetQueryData = (
+    t2Cols: SMap<ColumnItem[]>,
+    focusConstraints: ConstraintItemExtended[]
+  ) =>
+    dispatch(
+      setQueryDataSucceeded({
+        t2Cols,
+        focusConstraints,
+      })
+    );
+
+  const onRightClickWhereableColumn = (
+    x: number,
+    y: number,
+    column: ColumnItemExtended
+  ) => {
+    if (!builderRef.current) {
+      return;
+    }
+    builderRef.current.show(column, x, y);
+  };
+
+  const handleWhereColumnData = (tableName, columnValues) => {
+    dispatch(setTableWhereData(columnValues));
+  };
+
   return (
-    <svg
-      className="schema-svg-map"
-      ref={(ref) =>
-        ref &&
-        timed(draw)(
-          svgWidth,
-          ref,
-          schema,
-          focusTable,
-          tables,
-          columns,
-          constraints,
-          (newFocusTable) => {
-            dispatch(setFocusTableSaga(newFocusTable));
-            window.scrollTo(0, 0);
-          },
-          (
-            t2Cols: SMap<ColumnItem[]>,
-            focusConstraints: ConstraintItemExtended[]
-          ) =>
-            dispatch(
-              setQueryDataSucceeded({
-                t2Cols,
-                focusConstraints,
-              })
-            )
-        )
-      }
-    />
+    <>
+      <svg
+        className="schema-svg-map"
+        ref={(ref) =>
+          ref &&
+          timed(draw)(
+            svgWidth,
+            ref,
+            focusTable,
+            tables,
+            columns,
+            constraints,
+            onSetFocusTable,
+            onSetQueryData,
+            onRightClickWhereableColumn
+          )
+        }
+      />
+      <WhereColumnBuilderMenu
+        ref={builderRef}
+        handleWhere={handleWhereColumnData}
+      />
+    </>
   );
 };
 

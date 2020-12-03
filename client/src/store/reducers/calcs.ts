@@ -3,12 +3,14 @@ import {
   ConstraintItemExtended,
   WhereColumnValue,
 } from "../../components/dbMap/DataUtil";
+import { mergeDistinct } from "../../util/arrayUtil";
 import { SMap } from "../../util/utils";
 import { Action } from "../actions/actionUtil";
 import {
   setQueryDataActionFailed,
   setQueryDataActionRequested,
   setQueryDataActionSucceeded,
+  setTableWhereDataAction,
   setWhereDataAction,
   unsetWhereDataAction,
 } from "../actions/calcs";
@@ -63,6 +65,22 @@ const calcsReducer = (
       return {
         ...state,
         whereData: action.payload,
+      };
+    case setTableWhereDataAction:
+      const tableWhereData: WhereColumnValue[] = action.payload;
+      const table = tableWhereData[0].table;
+      const mergedColumnData: WhereColumnValue[] = mergeDistinct<WhereColumnValue>(
+        state.whereData[table],
+        tableWhereData,
+        (whereColumnValue) => whereColumnValue.column
+      );
+
+      return {
+        ...state,
+        whereData: {
+          ...state.whereData,
+          [table]: mergedColumnData,
+        },
       };
     case unsetWhereDataAction:
       return {

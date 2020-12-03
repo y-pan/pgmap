@@ -7,15 +7,14 @@ import Search from "../search/Search";
 import { getQueryData, getWhereData } from "../../store/selectors/calcs";
 import { getCurrent } from "../../store/selectors/schemas";
 import { generateSelectJoinWhereQuery } from "../dbMap/DataUtil";
-import WhereBuilder from "../whereBuilder/WhereBuilder";
-// todo: remove query out of store
+
 const DbMapTHead: React.FC = () => {
   const dispatch = useDispatch();
   const schema = useSelector(getCurrent);
   const focusTable = useSelector(getFocusTable);
   const { whereableT2Cols, focusConstraints } = useSelector(getQueryData);
   const whereData = useSelector(getWhereData);
-
+  console.log("where data", whereData);
   const [query, setQuery] = useState("");
   const [isCopiedHidden, setIsCopiedHidden] = useState(true);
   const setIsCopiedHiddenTimeout = useRef(undefined);
@@ -80,7 +79,8 @@ const DbMapTHead: React.FC = () => {
           </pre>
         </th>
         <th>
-          <WhereBuilder />
+          {/* <WhereBuilder /> */}
+          {/* <div>Summary of wheres?</div> */}
         </th>
       </tr>
     </thead>

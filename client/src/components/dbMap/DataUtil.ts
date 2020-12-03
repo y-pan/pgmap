@@ -216,6 +216,23 @@ export enum WhereOps {
   NOT_LIKE = "NOT LIKE", // For non-numeric DataTypes
   NOT_ILIKE = "NOT ILIKE", // For non-numeric DataTypes
 }
+
+export function allWhereOps() {
+  return [
+    WhereOps.EQ,
+    WhereOps.NE,
+    WhereOps.LT,
+    WhereOps.LE,
+    WhereOps.GT,
+    WhereOps.GE,
+    WhereOps.IN,
+    WhereOps.NOT_IN,
+    WhereOps.LIKE,
+    WhereOps.NOT_LIKE,
+    WhereOps.ILIKE,
+    WhereOps.NOT_ILIKE,
+  ];
+}
 export interface WhereColumnValue {
   // Only care about <table>.<column> <op> [<value>
   // This alone can't handle AND/OR logic, and will be somewhere else.

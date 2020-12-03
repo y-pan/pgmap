@@ -56,6 +56,22 @@ export default class WhereColumnValueBuilder {
   }
 }
 
+export function isNumericDataType(dataType: DataTypes): boolean {
+  switch (dataType) {
+    case DataTypes.NUMERIC:
+    case DataTypes.INT:
+    case DataTypes.BIGINT:
+    case DataTypes.SMALLINT:
+    case DataTypes.DOUBLE_PRECISION:
+    case DataTypes.MONEY:
+    case DataTypes.REAL:
+      // case DataTypes.BOOLEAN:
+      return true;
+    default:
+      return false;
+  }
+}
+
 function shouldQuote(dataType: DataTypes): boolean {
   switch (dataType) {
     case DataTypes.NUMERIC:

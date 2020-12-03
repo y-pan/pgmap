@@ -32,6 +32,11 @@ export const {
 } = simpleActionOf<SMap<WhereColumnValue[]>>(NAMESPACE, "setWhereData");
 
 export const {
+  type: setTableWhereDataAction,
+  creator: setTableWhereData,
+} = simpleActionOf<WhereColumnValue[]>(NAMESPACE, "setTableWhereData");
+
+export const {
   type: unsetWhereDataAction,
   creator: unsetWhereData,
 } = simpleActionOf<void>(NAMESPACE, "unsetWhereData");

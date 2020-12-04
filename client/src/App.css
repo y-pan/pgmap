@@ -138,17 +138,30 @@ rect.column-fk {
 }
 
 .whereColumnMenu {
-  min-width: 200px;
-  min-height: 50px;
-  max-width: 600px;
-  max-height: 200px;
+  padding: 2px;
   position: absolute;
-  /* padding: 10px; */
-  /* z-index: 3000; */
-  background-color: rgb(199, 222, 163);
+  background-color: rgb(153 203 232);
   border-radius: 5px;
   border: 1px solid grey;
   box-shadow: grey;
   box-sizing: border-box;
   overflow: auto;
+}
+
+.closeX {
+  float: right;
+  padding: 4px 6px;
+  cursor: pointer;
+  font-weight: bold;
+  color: white;
+  font-size: 12px;
+  line-height: 14px;
+  border: 1px solid white;
+  background-color: #f50057;
+  border-radius: 3px;
+  margin: 2px;
+}
+
+.footer-box {
+  float: right;
 }

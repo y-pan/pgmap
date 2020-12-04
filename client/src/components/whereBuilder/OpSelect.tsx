@@ -1,29 +1,30 @@
 import { FormControl, Select, MenuItem } from "@material-ui/core";
-import React, { useState } from "react";
-import { allWhereOps, DEFAULT_OP, WhereOps } from "../dbMap/DataUtil";
+import React, { useEffect, useState } from "react";
+import { DataTypes } from "../../api/type";
+import {
+  defaultWhereOpIndexByDataType,
+  validWhereOpsByDataType,
+  WhereOps,
+} from "../dbMap/DataUtil";
 
 interface Props {
+  dataType: DataTypes;
   onSelect: (op: WhereOps) => void;
 }
 
-const OpSelect: React.FC<Props> = ({ onSelect }) => {
-  const [allOps] = useState(allWhereOps());
-  const [selected, setSelected] = useState(allOps.indexOf(DEFAULT_OP));
+const OpSelect: React.FC<Props> = ({ onSelect, dataType }) => {
+  const [selected, setSelected] = useState(
+    defaultWhereOpIndexByDataType(dataType)
+  );
+
+  useEffect(() => setSelected(defaultWhereOpIndexByDataType(dataType)), [
+    dataType,
+  ]);
 
   return (
     <FormControl>
-      {/* <InputLabel id="demo-simple-select-helper-label">Operator</InputLabel> */}
-      <Select
-        // labelId="demo-simple-select-helper-label"
-        // id="demo-simple-select-helper"
-        style={{ textAlign: "center" }}
-        value={selected}
-        // onChange={(event, menuItem) => {
-        //   setSelected((menuItem as any).props.value);
-        //   onSelect((menuItem as any).props.children);
-        // }}
-      >
-        {allOps.map((op, index) => (
+      <Select style={{ textAlign: "center" }} value={selected}>
+        {validWhereOpsByDataType(dataType).map((op, index) => (
           <MenuItem
             dense
             key={index}
@@ -37,7 +38,6 @@ const OpSelect: React.FC<Props> = ({ onSelect }) => {
           </MenuItem>
         ))}
       </Select>
-      {/* <FormHelperText>Operator</FormHelperText> */}
     </FormControl>
   );
 };

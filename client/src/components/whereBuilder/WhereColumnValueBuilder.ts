@@ -1,9 +1,5 @@
-import { DataTypes } from "../../api/type";
-import { asArray } from "../../util/arrayUtil";
 import { SMap } from "../../util/utils";
-import { WhereColumnValue, WhereOps } from "../dbMap/DataUtil";
-
-type WhereValueType = string | number | string[] | number[]; // this string/number doesn't decide the actual type, just for typescript
+import { getOpValueString, WhereColumnValue } from "../dbMap/DataUtil";
 
 export default class WhereColumnValueBuilder {
   private _tableAlias: SMap<string>;
@@ -54,61 +50,4 @@ export default class WhereColumnValueBuilder {
 
     return !queryNoWhere ? "" : `WHERE \n    ${queryNoWhere}`;
   }
-}
-
-export function isNumericDataType(dataType: DataTypes): boolean {
-  switch (dataType) {
-    case DataTypes.NUMERIC:
-    case DataTypes.INT:
-    case DataTypes.BIGINT:
-    case DataTypes.SMALLINT:
-    case DataTypes.DOUBLE_PRECISION:
-    case DataTypes.MONEY:
-    case DataTypes.REAL:
-      // case DataTypes.BOOLEAN:
-      return true;
-    default:
-      return false;
-  }
-}
-
-function shouldQuote(dataType: DataTypes): boolean {
-  switch (dataType) {
-    case DataTypes.NUMERIC:
-    case DataTypes.INT:
-    case DataTypes.BIGINT:
-    case DataTypes.SMALLINT:
-    case DataTypes.DOUBLE_PRECISION:
-    case DataTypes.MONEY:
-    case DataTypes.REAL:
-    case DataTypes.BOOLEAN:
-      return false;
-    default:
-      return true;
-  }
-}
-
-function quoteIfNeeded(value: any, dataType: DataTypes): string {
-  return shouldQuote(dataType) ? `'${value}'` : value;
-}
-
-export function getOpValueString(
-  op: WhereOps,
-  value: WhereValueType,
-  dataType: DataTypes
-): string {
-  let finalValue;
-  if (op === WhereOps.IN || op === WhereOps.NOT_IN) {
-    const values = asArray(value);
-    const joinQuoted = values
-      .map((val) => quoteIfNeeded(val, dataType))
-      .join(","); // 'val1','val2','val3'
-    finalValue = `( ${joinQuoted} )`; // ( 'val1','val2','val3' )
-  } else {
-    // For `LIKE`, `ILIKE`, `NOT LIKE`, `NOT ILIKE`,
-    // we expect user already put in the matching symbols in value (%), to be simple in code, and flexible in search
-    finalValue = quoteIfNeeded(value, dataType); // 'val'
-  }
-
-  return `${op} ${finalValue}`; // IN ( 'val1','val2','val3' );    = 'val'
 }

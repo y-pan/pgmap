@@ -14,14 +14,18 @@ import { DataTypes } from "../../api/type";
 import WithFooter from "../../containers/WithFooter/WithFooter";
 import { setTableWhereData } from "../../store/actions/calcs";
 import { nonNil, isNil } from "../../util/utils";
-import { ColumnItemExtended, DEFAULT_OP, WhereOps } from "../dbMap/DataUtil";
+import {
+  ColumnItemExtended,
+  defaultWhereOpByDataType,
+  getOpValueString,
+  isNumericDataType,
+  WhereOps,
+} from "../dbMap/DataUtil";
 import OpSelect from "./OpSelect";
-import { getOpValueString, isNumericDataType } from "./WhereColumnValueBuilder";
 
 interface Props {
   column: ColumnItemExtended;
   onClose: () => void;
-  // onWhereData: (whereData: WhereColumnValue) => void;
 }
 
 const cleanValueOf = (
@@ -58,15 +62,15 @@ const cleanValueOf = (
 };
 
 const WhereColumnMenuTable: React.FC<Props> = ({ column, onClose }) => {
+  const { table_name, column_name, data_type } = column;
   const dispatch = useDispatch();
 
-  const [op, setOp] = useState(DEFAULT_OP);
+  const [op, setOp] = useState(defaultWhereOpByDataType(data_type));
   const [value, setValue] = useState("");
   const [cleanValue, setCleanValue] = useState<
     string | number | string[] | number[]
   >("");
   const [outpuOpValue, setOutputOpValue] = useState<string>("");
-  const { table_name, column_name, data_type } = column;
 
   useEffect(() => {
     const newCleanValue = cleanValueOf(value, op, data_type);
@@ -74,6 +78,8 @@ const WhereColumnMenuTable: React.FC<Props> = ({ column, onClose }) => {
     setCleanValue(newCleanValue);
     setOutputOpValue(newOutputOpValue);
   }, [data_type, op, value]);
+
+  useEffect(() => setOp(defaultWhereOpByDataType(data_type)), [data_type]);
 
   return (
     <WithFooter
@@ -115,7 +121,7 @@ const WhereColumnMenuTable: React.FC<Props> = ({ column, onClose }) => {
               <TableCell>{column_name}</TableCell>
               <TableCell>{data_type}</TableCell>
               <TableCell>
-                <OpSelect onSelect={(op) => setOp(op)} />
+                <OpSelect dataType={data_type} onSelect={(op) => setOp(op)} />
               </TableCell>
               <TableCell>
                 <TextField

@@ -234,7 +234,118 @@ export function allWhereOps() {
   ];
 }
 
-export const DEFAULT_OP = WhereOps.EQ;
+export function isNumericDataType(dataType: DataTypes): boolean {
+  switch (dataType) {
+    case DataTypes.NUMERIC:
+    case DataTypes.INT:
+    case DataTypes.BIGINT:
+    case DataTypes.SMALLINT:
+    case DataTypes.DOUBLE_PRECISION:
+    case DataTypes.MONEY:
+    case DataTypes.REAL:
+      // case DataTypes.BOOLEAN:
+      return true;
+    default:
+      return false;
+  }
+}
+
+const NUMERIC_WHEREOPS = [
+  // SAME FOR BOOLEAN
+  WhereOps.EQ,
+  WhereOps.NE,
+  WhereOps.LT,
+  WhereOps.LE,
+  WhereOps.GT,
+  WhereOps.GE,
+  WhereOps.IN,
+  WhereOps.NOT_IN,
+];
+const DEFAULT_NUMERIC_WHEREOP = WhereOps.EQ; // SAME FOR BOOLEAN
+const DEFAULT_NUMERIC_WHEREOP_INDEX = NUMERIC_WHEREOPS.indexOf(
+  // SAME FOR BOOLEAN
+  DEFAULT_NUMERIC_WHEREOP
+);
+
+const ALL_WHEREOPS = [
+  WhereOps.EQ,
+  WhereOps.NE,
+  WhereOps.LT,
+  WhereOps.LE,
+  WhereOps.GT,
+  WhereOps.GE,
+  WhereOps.IN,
+  WhereOps.NOT_IN,
+  WhereOps.LIKE,
+  WhereOps.ILIKE,
+  WhereOps.NOT_LIKE,
+  WhereOps.NOT_ILIKE,
+];
+
+const DEFAULT_WHEREOP = WhereOps.ILIKE;
+const DEFAULT_WHEREOP_INDEX = ALL_WHEREOPS.indexOf(DEFAULT_WHEREOP);
+
+export function validWhereOpsByDataType(dataType: DataTypes): WhereOps[] {
+  if (isNumericDataType(dataType) || dataType === DataTypes.BOOLEAN) {
+    return [...NUMERIC_WHEREOPS];
+  }
+  return [...ALL_WHEREOPS];
+}
+
+export function defaultWhereOpByDataType(dataType: DataTypes): WhereOps {
+  if (isNumericDataType(dataType) || dataType === DataTypes.BOOLEAN)
+    return DEFAULT_NUMERIC_WHEREOP;
+  return DEFAULT_WHEREOP;
+}
+
+export function defaultWhereOpIndexByDataType(dataType: DataTypes): number {
+  if (isNumericDataType(dataType) || dataType === DataTypes.BOOLEAN)
+    return DEFAULT_NUMERIC_WHEREOP_INDEX;
+  return DEFAULT_WHEREOP_INDEX;
+}
+
+export type WhereValueType = string | number | string[] | number[]; // this string/number doesn't decide the actual type, just for typescript
+
+export function shouldQuote(dataType: DataTypes): boolean {
+  switch (dataType) {
+    case DataTypes.NUMERIC:
+    case DataTypes.INT:
+    case DataTypes.BIGINT:
+    case DataTypes.SMALLINT:
+    case DataTypes.DOUBLE_PRECISION:
+    case DataTypes.MONEY:
+    case DataTypes.REAL:
+    case DataTypes.BOOLEAN:
+      return false;
+    default:
+      return true;
+  }
+}
+
+export function quoteIfNeeded(value: any, dataType: DataTypes): string {
+  return shouldQuote(dataType) ? `'${value}'` : value;
+}
+
+export function getOpValueString(
+  op: WhereOps,
+  value: WhereValueType,
+  dataType: DataTypes
+): string {
+  let finalValue;
+  if (op === WhereOps.IN || op === WhereOps.NOT_IN) {
+    const values = asArray(value);
+    const joinQuoted = values
+      .map((val) => quoteIfNeeded(val, dataType))
+      .join(","); // 'val1','val2','val3'
+    finalValue = `( ${joinQuoted} )`; // ( 'val1','val2','val3' )
+  } else {
+    // For `LIKE`, `ILIKE`, `NOT LIKE`, `NOT ILIKE`,
+    // we expect user already put in the matching symbols in value (%), to be simple in code, and flexible in search
+    finalValue = quoteIfNeeded(value, dataType); // 'val'
+  }
+
+  return `${op} ${finalValue}`; // IN ( 'val1','val2','val3' );    = 'val'
+}
 
 export interface WhereColumnValue {
   // Only care about <table>.<column> <op> [<value>

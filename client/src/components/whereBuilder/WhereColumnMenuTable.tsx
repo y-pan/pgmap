@@ -7,6 +7,7 @@ import {
   TableCell,
   TableBody,
 } from "@material-ui/core";
+import TextField from "@material-ui/core/TextField/TextField";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { DataTypes } from "../../api/type";
@@ -105,7 +106,9 @@ const WhereColumnMenuTable: React.FC<Props> = ({ column, onClose }) => {
                 <OpSelect onSelect={(op) => setOp(op)} />
               </TableCell>
               <TableCell>
-                <input
+                <TextField
+                  size="small"
+                  label="Standard"
                   value={value}
                   onChange={(event) => setValue(event.target.value)}
                 />

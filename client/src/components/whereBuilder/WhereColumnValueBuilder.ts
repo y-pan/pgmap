@@ -92,7 +92,7 @@ function quoteIfNeeded(value: any, dataType: DataTypes): string {
   return shouldQuote(dataType) ? `'${value}'` : value;
 }
 
-function getOpValueString(
+export function getOpValueString(
   op: WhereOps,
   value: WhereValueType,
   dataType: DataTypes

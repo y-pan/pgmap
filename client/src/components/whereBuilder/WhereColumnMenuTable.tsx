@@ -8,7 +8,7 @@ import {
   TableBody,
 } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField/TextField";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { DataTypes } from "../../api/type";
 import WithFooter from "../../containers/WithFooter/WithFooter";
@@ -16,7 +16,7 @@ import { setTableWhereData } from "../../store/actions/calcs";
 import { nonNil, isNil } from "../../util/utils";
 import { ColumnItemExtended, DEFAULT_OP, WhereOps } from "../dbMap/DataUtil";
 import OpSelect from "./OpSelect";
-import { isNumericDataType } from "./WhereColumnValueBuilder";
+import { getOpValueString, isNumericDataType } from "./WhereColumnValueBuilder";
 
 interface Props {
   column: ColumnItemExtended;
@@ -24,7 +24,7 @@ interface Props {
   // onWhereData: (whereData: WhereColumnValue) => void;
 }
 
-const valueOf = (
+const cleanValueOf = (
   valueStr: string,
   op: WhereOps,
   dataType: DataTypes
@@ -58,14 +58,26 @@ const valueOf = (
 };
 
 const WhereColumnMenuTable: React.FC<Props> = ({ column, onClose }) => {
-  const [op, setOp] = useState(DEFAULT_OP);
-  const [value, setValue] = useState("");
   const dispatch = useDispatch();
 
+  const [op, setOp] = useState(DEFAULT_OP);
+  const [value, setValue] = useState("");
+  const [cleanValue, setCleanValue] = useState<
+    string | number | string[] | number[]
+  >("");
+  const [outpuOpValue, setOutputOpValue] = useState<string>("");
   const { table_name, column_name, data_type } = column;
+
+  useEffect(() => {
+    const newCleanValue = cleanValueOf(value, op, data_type);
+    const newOutputOpValue = getOpValueString(op, newCleanValue, data_type);
+    setCleanValue(newCleanValue);
+    setOutputOpValue(newOutputOpValue);
+  }, [data_type, op, value]);
 
   return (
     <WithFooter
+      okText={"Update Where"}
       hasOK={true}
       hasClose={true}
       onClose={onClose}
@@ -77,7 +89,7 @@ const WhereColumnMenuTable: React.FC<Props> = ({ column, onClose }) => {
               column: column_name,
               dataType: data_type,
               op,
-              value: valueOf(value, op, data_type),
+              value: cleanValue,
             },
           ])
         );
@@ -110,7 +122,24 @@ const WhereColumnMenuTable: React.FC<Props> = ({ column, onClose }) => {
                   size="small"
                   label="Standard"
                   value={value}
-                  onChange={(event) => setValue(event.target.value)}
+                  onChange={(event) => {
+                    const rawValue: string = event.target.value.trim();
+                    setValue(rawValue);
+                  }}
+                />
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell colSpan={5}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  variant="outlined"
+                  label="Where clause:"
+                  value={`${table_name}.${column_name} ${outpuOpValue}`}
+                  InputProps={{
+                    readOnly: true,
+                  }}
                 />
               </TableCell>
             </TableRow>

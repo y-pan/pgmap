@@ -2,6 +2,8 @@ import { Button } from "@material-ui/core";
 import React from "react";
 
 interface Props {
+  okText?: string;
+  closeText?: string;
   hasOK?: boolean;
   hasClose?: boolean;
   onOk?: () => void;
@@ -9,6 +11,8 @@ interface Props {
 }
 
 const WithFooter: React.FC<Props> = ({
+  okText = "OK",
+  closeText = "Close",
   hasOK,
   hasClose,
   onOk,
@@ -21,12 +25,12 @@ const WithFooter: React.FC<Props> = ({
       <div className="footer-box">
         {hasClose && (
           <Button color="secondary" onClick={onClose}>
-            Close
+            {closeText}
           </Button>
         )}
         {hasOK && (
           <Button color="primary" onClick={onOk}>
-            OK
+            {okText}
           </Button>
         )}
       </div>

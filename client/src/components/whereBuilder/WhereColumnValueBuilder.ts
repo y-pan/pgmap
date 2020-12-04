@@ -1,7 +1,7 @@
 import { DataTypes } from "../../api/type";
 import { asArray } from "../../util/arrayUtil";
 import { SMap } from "../../util/utils";
-import { WhereColumnValue, WhereOps } from "./DataUtil";
+import { WhereColumnValue, WhereOps } from "../dbMap/DataUtil";
 
 type WhereValueType = string | number | string[] | number[]; // this string/number doesn't decide the actual type, just for typescript
 

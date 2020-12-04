@@ -39,7 +39,7 @@ import {
   setTableWhereData,
   setWhereData,
 } from "../../store/actions/calcs";
-import WhereColumnBuilderMenu from "../whereBuilder/WhereColumnBuilderMenu";
+import WhereColumnBuilderMenu from "../whereBuilder/WhereColumnMenu";
 import { Ref } from "react";
 
 interface Props {
@@ -483,7 +483,7 @@ const SvgMap: React.FC<Props> = ({
     if (!builderRef.current) {
       return;
     }
-    builderRef.current.show(column, x, y);
+    builderRef.current.show(column, x + 10, y + CELL_HEIGHT);
   };
 
   const handleWhereColumnData = (tableName, columnValues) => {

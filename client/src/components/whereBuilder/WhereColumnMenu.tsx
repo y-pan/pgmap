@@ -8,7 +8,7 @@ import {
   WhereColumnValue,
   WhereOps,
 } from "../dbMap/DataUtil";
-import { isNumericDataType } from "../dbMap/WhereColumnValueBuilder";
+import { isNumericDataType } from "./WhereColumnValueBuilder";
 import OpSelect from "./OpSelect";
 
 interface Props {

@@ -10,7 +10,7 @@ import { asArray } from "../../util/arrayUtil";
 import { compare, groupBy, SMap } from "../../util/utils";
 import SelectColumnsBuilder from "./SelectColumnsBuilder";
 import { CELL_HEIGHT, CELL_WIDTH, TABLE_HSPACE, TABLE_VSPACE } from "./SvgMap";
-import WhereColumnValueBuilder from "./WhereColumnValueBuilder";
+import WhereColumnValueBuilder from "../whereBuilder/WhereColumnValueBuilder";
 
 export interface Margin {
   top: number;

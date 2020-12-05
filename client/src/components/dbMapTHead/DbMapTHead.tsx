@@ -78,10 +78,6 @@ const DbMapTHead: React.FC = () => {
             Copied!
           </pre>
         </th>
-        <th>
-          {/* <WhereBuilder /> */}
-          {/* <div>Summary of wheres?</div> */}
-        </th>
       </tr>
     </thead>
   );

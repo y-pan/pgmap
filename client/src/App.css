@@ -146,6 +146,8 @@ rect.column-fk {
   box-shadow: grey;
   box-sizing: border-box;
   overflow: auto;
+  max-width: 560px;
+  max-height: 270px;
 }
 
 .closeX {

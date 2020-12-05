@@ -15,6 +15,9 @@ interface States {
   isHidden: boolean;
 }
 
+const MAX_WIDTH = 560;
+const MAX_HEIGHT = 270;
+
 class WhereColumnBuilderMenu extends React.Component<Props, States> {
   constructor(props) {
     super(props);
@@ -29,9 +32,13 @@ class WhereColumnBuilderMenu extends React.Component<Props, States> {
   }
 
   show(column: ColumnItemExtended, x: number, y: number): void {
+    const x1 = x + window.scrollX;
+    const y1 = y + window.scrollY;
+    console.log("POSX", x1, MAX_WIDTH, window.innerWidth);
+    console.log("POSY", y1, MAX_HEIGHT, window.innerHeight);
     this.setState({
-      x: x + window.scrollX,
-      y: y + window.scrollY,
+      x: Math.min(x1, window.innerWidth - MAX_WIDTH),
+      y: Math.min(y1, window.innerHeight - MAX_HEIGHT),
       column,
       isHidden: false,
     });

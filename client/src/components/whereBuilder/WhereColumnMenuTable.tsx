@@ -129,7 +129,7 @@ const WhereColumnMenuTable: React.FC<Props> = ({ column, onClose }) => {
                   label="Standard"
                   value={value}
                   onChange={(event) => {
-                    const rawValue: string = event.target.value.trim();
+                    const rawValue: string = event.target.value;
                     setValue(rawValue);
                   }}
                 />

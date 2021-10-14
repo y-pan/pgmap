@@ -1,4 +1,4 @@
-import { all, put, takeEvery, call, take } from "redux-saga/effects";
+import { all, put, takeEvery, call, take, select } from "redux-saga/effects";
 import {
   getSchemasActionSaga,
   getSchemasFailed,
@@ -13,11 +13,17 @@ import { SchemaResponse } from "../../api/type";
 import { getTablesSaga, unsetFocusTableSucceeded } from "../actions/tables";
 import { getColumnsSaga } from "../actions/columns";
 import { getConstraintsSaga } from "../actions/constraints";
+import { getCurrentDatabase } from "../selectors/databases";
 
 function* getSchemasSaga() {
   try {
+    const currentDatabase: string = yield select(getCurrentDatabase);
+    if (!currentDatabase) {
+      console.error("A database must be selected for fetching schema.");
+      return;
+    }
     yield put(getSchemasRequested());
-    const schemasReponse: SchemaResponse = yield call(fetchSchemas); // all schemas
+    const schemasReponse: SchemaResponse = yield call(fetchSchemas, currentDatabase); // all schemas
     yield put(getSchemasSucceeded(schemasReponse.items));
     // for convenient, select "public" schema automatically
     if (schemasReponse.items.find((schema) => schema === "public")) {

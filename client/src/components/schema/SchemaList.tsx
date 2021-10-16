@@ -5,18 +5,20 @@ import { LoadingStatus } from '../../store/reducers/types';
 import { getCurrent, getSchemas, getSchemasStatus } from '../../store/selectors/schemas';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Link from '@material-ui/core/Link';
+import { getCurrentDatabase } from '../../store/selectors/databases';
 
 const SchemaList: React.FC = () => {
   const dispatch = useDispatch();
   const schemasStatus = useSelector(getSchemasStatus);
   const schemas = useSelector(getSchemas);
   const currentSchema = useSelector(getCurrent);
+  const currentDatabase = useSelector(getCurrentDatabase);
 
   useEffect(() => {
-    if (schemasStatus === LoadingStatus.INITIAL) {
+    if (schemasStatus === LoadingStatus.INITIAL && currentDatabase) {
       dispatch(getSchemasSaga());
     }
-  }, [dispatch, schemasStatus])
+  }, [dispatch, schemasStatus, currentDatabase])
 
   let listItems: JSX.Element[] = [] 
 
@@ -37,9 +39,12 @@ const SchemaList: React.FC = () => {
   }
 
   return (
+    <>
+    <strong>Schemas:</strong>
     <Breadcrumbs aria-label="breadcrumb" itemsBeforeCollapse={10} maxItems={20}>
       {listItems}
     </Breadcrumbs>
+    </>
   )
 }
 

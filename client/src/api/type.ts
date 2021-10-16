@@ -6,6 +6,8 @@ export enum ConstraintTypes {
 }
 
 // items
+export type DatabaseItem = string;
+
 export type SchemaItem = string;
 interface hasTableSchema {
   table_schema: string;
@@ -98,6 +100,7 @@ export interface FetchResponse<T> {
   count: number;
   items: T[];
 }
+export type DatabaseResponse = FetchResponse<DatabaseItem>;
 export type SchemaResponse = FetchResponse<SchemaItem>;
 export type TableResponse = FetchResponse<TableItem>;
 export type ConstraintResponse = FetchResponse<ConstraintItem>;

@@ -1,4 +1,4 @@
-kill $(lsof -t -i:8001)
+kill $(lsof -ti:8001)
 
 cd ./server
 # npm install

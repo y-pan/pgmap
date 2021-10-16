@@ -1,6 +1,7 @@
 import {
   ColumnResponse,
   ConstraintResponse,
+  DatabaseResponse,
   FetchResponse,
   SchemaResponse,
   TableResponse,
@@ -23,8 +24,14 @@ function handleResponse(res: Response): Promise<FetchResponse<any>> {
   return Promise.reject(res.json());
 }
 
-export const fetchSchemas = async (): Promise<SchemaResponse> => {
-  const url = urlOf("schemas");
+export const fetchDatabases = async (): Promise<DatabaseResponse> => {
+  const url = urlOf("databases");
+  return handleResponse(await fetch(url));
+}
+
+export const fetchSchemas = async (database: string): Promise<SchemaResponse> => {
+  const query = queryOf({ database })
+  const url = urlOf(`schemas${query}`);
   // console.log("fetchSchemas: ", url)
   return handleResponse(await fetch(url));
 };

@@ -6,6 +6,7 @@ import {
   fetchTables,
   fetchColumnsByTable,
   fetchContraints,
+  fetchDatabases,
 } from "./db";
 const cors = require("cors");
 
@@ -26,9 +27,16 @@ app.options(
 );
 
 // routes
+// list databases
+app.get('/api/databases', async (req, res) => {
+  const databases = await(fetchDatabases())
+  res.json(databases);
+});
+
 // list schemas
 app.get("/api/schemas", async (req, res) => {
-  const schemas = await fetchSchemas(); // schema names only
+  const database = req.query.database as string;
+  const schemas = await fetchSchemas(database); // schema names only
   res.json(schemas);
 });
 

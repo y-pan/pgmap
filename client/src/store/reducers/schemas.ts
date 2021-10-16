@@ -1,5 +1,6 @@
 import { SchemaItem } from "../../api/type";
 import { Action } from "../actions/actionUtil";
+import { setCurrentDatabaseAction } from "../actions/databases";
 import {
   getSchemasActionFailed,
   getSchemasActionRequested,
@@ -66,6 +67,13 @@ const schemasReducer = (
         schemas: action.payload,
         schemasStatus: LoadingStatus.SUCCEEDED,
       };
+    case setCurrentDatabaseAction:
+      return {
+        ...state,
+        schemasStatus: LoadingStatus.INITIAL,
+        schemas: undefined,
+        current: undefined,
+      }
     default:
       return state;
   }

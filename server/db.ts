@@ -1,14 +1,68 @@
-import { Pool, Client, QueryResult, QueryResultRow } from "pg";
+import { Client, QueryResult, QueryResultRow } from "pg";
 const secret = require("./secret/secret.json");
-const pool = new Pool(secret);
 const isDebug = true;
+
+let client;
+let currentDatabase;
 
 interface FetchResult {
   items: string[] | QueryResultRow[] | any[];
   count: number;
 }
 
-export async function fetchSchemas(): Promise<FetchResult> {
+function resetPgClient(): Promise<void> {
+  currentDatabase = "";
+  try {
+    if (client) {
+      client.end();
+    }
+    client = new Client({...secret, database: "postgres"});
+    return client.connect();
+  } catch (e) {
+    log("Failed to reset pgClient");
+    log(e);
+  }
+}
+
+resetPgClient();
+
+export async function useDataBase(database: string): Promise<void> {
+  if (!currentDatabase && !database) {
+    throw new Error("Error: database has to be specified");
+  }
+  if (!currentDatabase || currentDatabase !== database) {
+    try {
+      if (client) {
+        await client.end();
+      }
+      
+      client = new Client({...secret, database});
+
+      await client.connect();
+      currentDatabase = database;
+      log(`Using db ${database}`);
+    } catch (e) {
+      await resetPgClient();
+      log(e);
+      throw e;
+    }
+  }
+}
+
+export async function fetchDatabases(): Promise<FetchResult> {
+  const queryStr = `SELECT datname FROM pg_database;`;
+  logQuery(queryStr);
+  const {rows, rowCount} = await client.query(queryStr)
+  return {items: rows.map(row => row.datname), count: rowCount}
+}
+
+export async function fetchSchemas(database: string): Promise<FetchResult> {
+  if (!database) {
+    log(`database is required`);
+    throw new Error(`database is required`)
+  }
+
+  await useDataBase(database);
   const queryStr = `
   SELECT schema_name
   FROM information_schema.schemata
@@ -16,7 +70,7 @@ export async function fetchSchemas(): Promise<FetchResult> {
 
   logQuery(queryStr);
 
-  const { rows, rowCount }: QueryResult<QueryResultRow> = await pool.query(
+  const { rows, rowCount }: QueryResult<QueryResultRow> = await client.query(
     queryStr
   );
   return {
@@ -49,7 +103,7 @@ export async function fetchTables(schema?: string): Promise<FetchResult> {
 
   logQuery(queryStr);
 
-  const { rowCount, rows }: QueryResult<QueryResultRow> = await pool.query(
+  const { rowCount, rows }: QueryResult<QueryResultRow> = await client.query(
     queryStr
   );
   return {
@@ -77,7 +131,7 @@ export async function fetchColumnsByTable(
 
   logQuery(queryStr);
 
-  const { rowCount, rows }: QueryResult<QueryResultRow> = await pool.query(
+  const { rowCount, rows }: QueryResult<QueryResultRow> = await client.query(
     queryStr
   );
   return {
@@ -117,7 +171,7 @@ export async function fetchContraints(
 
   logQuery(queryStr);
 
-  const { rowCount, rows }: QueryResult<QueryResultRow> = await pool.query(
+  const { rowCount, rows }: QueryResult<QueryResultRow> = await client.query(
     queryStr
   );
   return {
@@ -157,7 +211,7 @@ async function fetchIndexes(
         tablename,
         indexname;
     `;
-  const { rowCount, rows }: QueryResult<QueryResultRow> = await pool.query(
+  const { rowCount, rows }: QueryResult<QueryResultRow> = await client.query(
     queryStr
   );
   return {
@@ -183,5 +237,9 @@ function getWhereForFetchContraints(schema: string, table: string): string {
 }
 
 function logQuery(query) {
-  isDebug && console.log(`[query]:\n${query}`);
+  isDebug && log(`[query]:\n${query}`);
+}
+
+function log(msg) {
+  console.log(`${new Date().toISOString()}`, msg);
 }

@@ -5,8 +5,10 @@ import columns from "./columns";
 import constraints from "./constraints";
 import search from "./search";
 import calcs from "./calcs";
+import databases from "./databases";
 
 const rootReducer = combineReducers({
+  databases,
   schemas,
   tables,
   columns,

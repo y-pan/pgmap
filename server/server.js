@@ -19,9 +19,15 @@ app.options("*", cors({
     origin: `http://localhost:${clientPort}`,
 }));
 // routes
+// list databases
+app.get('/api/databases', async (req, res) => {
+    const databases = await (db_1.fetchDatabases());
+    res.json(databases);
+});
 // list schemas
 app.get("/api/schemas", async (req, res) => {
-    const schemas = await db_1.fetchSchemas(); // schema names only
+    const database = req.query.database;
+    const schemas = await db_1.fetchSchemas(database); // schema names only
     res.json(schemas);
 });
 // list tables, optionally by schema

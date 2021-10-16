@@ -1,17 +1,67 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fetchContraints = exports.fetchColumnsByTable = exports.fetchTables = exports.fetchSchemas = void 0;
+exports.fetchContraints = exports.fetchColumnsByTable = exports.fetchTables = exports.fetchSchemas = exports.fetchDatabases = exports.useDataBase = void 0;
 const pg_1 = require("pg");
 const secret = require("./secret/secret.json");
-const pool = new pg_1.Pool(secret);
 const isDebug = true;
-async function fetchSchemas() {
+let client;
+let currentDatabase;
+function resetPgClient() {
+    currentDatabase = "";
+    try {
+        if (client) {
+            client.end();
+        }
+        client = new pg_1.Client(Object.assign(Object.assign({}, secret), { database: "postgres" }));
+        return client.connect();
+    }
+    catch (e) {
+        log("Failed to reset pgClient");
+        log(e);
+    }
+}
+resetPgClient();
+async function useDataBase(database) {
+    if (!currentDatabase && !database) {
+        throw new Error("Error: database has to be specified");
+    }
+    if (!currentDatabase || currentDatabase !== database) {
+        try {
+            if (client) {
+                await client.end();
+            }
+            client = new pg_1.Client(Object.assign(Object.assign({}, secret), { database }));
+            await client.connect();
+            currentDatabase = database;
+            log(`Using db ${database}`);
+        }
+        catch (e) {
+            await resetPgClient();
+            log(e);
+            throw e;
+        }
+    }
+}
+exports.useDataBase = useDataBase;
+async function fetchDatabases() {
+    const queryStr = `SELECT datname FROM pg_database;`;
+    logQuery(queryStr);
+    const { rows, rowCount } = await client.query(queryStr);
+    return { items: rows.map(row => row.datname), count: rowCount };
+}
+exports.fetchDatabases = fetchDatabases;
+async function fetchSchemas(database) {
+    if (!database) {
+        log(`database is required`);
+        throw new Error(`database is required`);
+    }
+    await useDataBase(database);
     const queryStr = `
   SELECT schema_name
   FROM information_schema.schemata
   `;
     logQuery(queryStr);
-    const { rows, rowCount } = await pool.query(queryStr);
+    const { rows, rowCount } = await client.query(queryStr);
     return {
         items: rows.map((schema) => schema.schema_name),
         count: rowCount,
@@ -41,7 +91,7 @@ async function fetchTables(schema) {
   order by table_type, table_name
   `;
     logQuery(queryStr);
-    const { rowCount, rows } = await pool.query(queryStr);
+    const { rowCount, rows } = await client.query(queryStr);
     return {
         count: rowCount,
         items: rows,
@@ -61,7 +111,7 @@ async function fetchColumnsByTable(schema, table) {
   ${whereClause}
   `;
     logQuery(queryStr);
-    const { rowCount, rows } = await pool.query(queryStr);
+    const { rowCount, rows } = await client.query(queryStr);
     return {
         count: rowCount,
         items: rows,
@@ -93,7 +143,7 @@ async function fetchContraints(schema, table) {
     rel.relname asc, con.contype desc
   `;
     logQuery(queryStr);
-    const { rowCount, rows } = await pool.query(queryStr);
+    const { rowCount, rows } = await client.query(queryStr);
     return {
         count: rowCount,
         items: rows,
@@ -128,7 +178,7 @@ async function fetchIndexes(schema, table) {
         tablename,
         indexname;
     `;
-    const { rowCount, rows } = await pool.query(queryStr);
+    const { rowCount, rows } = await client.query(queryStr);
     return {
         count: rowCount,
         items: rows,
@@ -151,5 +201,8 @@ function getWhereForFetchContraints(schema, table) {
     return whereClause ? ` WHERE ${whereClause}` : "";
 }
 function logQuery(query) {
-    isDebug && console.log(`[query]:\n${query}`);
+    isDebug && log(`[query]:\n${query}`);
+}
+function log(msg) {
+    console.log(`${new Date().toISOString()}`, msg);
 }

@@ -3,3 +3,4 @@ secret.json
 nohup.out
 
 *.ignore.*
+.DS_Store

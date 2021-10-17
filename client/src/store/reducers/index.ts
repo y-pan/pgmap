@@ -6,8 +6,10 @@ import constraints from "./constraints";
 import search from "./search";
 import calcs from "./calcs";
 import databases from "./databases";
+import operations from './operations';
 
 const rootReducer = combineReducers({
+  operations,
   databases,
   schemas,
   tables,

@@ -1,23 +1,20 @@
 
 import React, {useEffect} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getDatabasesSaga, setCurrentDatabase } from '../../store/actions/databases';
-import { LoadingStatus } from '../../store/reducers/types';
-import { getCurrentDatabase, getDatabasesStatus, getDatabases } from '../../store/selectors/databases';
+import { setCurrentDatabase } from '../../store/actions/databases';
+import { getCurrentDatabase, getDatabases } from '../../store/selectors/databases';
 import Link from '@material-ui/core/Link';
 import { Breadcrumbs } from '@material-ui/core';
+import { initialize } from './DatabaseList.actions';
 
 const DatabaseList: React.FC = () => {
     const dispatch = useDispatch();
-    const databasesStatus = useSelector(getDatabasesStatus);
     const databases = useSelector(getDatabases);
     const currentDatabase = useSelector(getCurrentDatabase);
 
     useEffect(() => {
-        if (databasesStatus == LoadingStatus.INITIAL) {
-            dispatch(getDatabasesSaga());
-        }
-    }, [dispatch, databasesStatus])
+        dispatch(initialize());
+    }, [dispatch])
 
     let databaseItems: JSX.Element[] = []
 

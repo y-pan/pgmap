@@ -4,11 +4,11 @@ import tablesSaga from "./tables";
 import constraintsSaga from "./constraints";
 import columnsSaga from "./columns";
 import search from "./search";
-import datasesSaga from "./databases";
+import databaseListSaga from "../../components/database/DatabaseList.saga";
 
 function* rootSaga() {
   yield all([
-    datasesSaga(),
+    databaseListSaga(),
     schemasSaga(),
     tablesSaga(),
     constraintsSaga(),

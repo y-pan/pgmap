@@ -37,7 +37,6 @@ import { wrapText } from "./UiUtil";
 import {
   setQueryDataSucceeded,
   setTableWhereData,
-  setWhereData,
 } from "../../store/actions/calcs";
 import WhereColumnBuilderMenu from "../whereBuilder/WhereColumnMenu";
 import { Ref } from "react";

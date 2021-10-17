@@ -1,44 +1,30 @@
-import { Action } from "../actions/actionUtil";
-import { getDatabasesActionFailed, getDatabasesActionRequested, getDatabasesActionSucceeded, setCurrentDatabaseAction } from "../actions/databases";
-import { LoadingStatus } from "./types";
+import { setCurrentDatabaseAction } from "../actions/databases";
+import { getDatabases } from "../Operation/Operations";
 
 export interface DatabasesState {
     databases?: string[];
-    databasesStatus: LoadingStatus;
     current?: string;
 }
 
 const initialState: DatabasesState = {
     databases: undefined,
-    databasesStatus: LoadingStatus.INITIAL,
     current: undefined
 }
 
 const databasesReducer = (
     state = initialState,
-    action: Action<any>
+    {type, payload},
 ): DatabasesState => {
-    switch (action.type) {
-        case getDatabasesActionSucceeded:
+    switch (type) {
+        case getDatabases.success:
             return {
                 ...state,
-                databases: action.payload,
-                databasesStatus: LoadingStatus.SUCCEEDED,
-            }
-        case getDatabasesActionRequested:
-            return {
-                ...state,
-                databasesStatus: LoadingStatus.REQUESTED,
-            }
-        case getDatabasesActionFailed:
-            return {
-                ...state,
-                databasesStatus: LoadingStatus.FAILED,
+                databases: payload.items
             }
         case setCurrentDatabaseAction:
             return {
                 ...state,
-                current: action.payload
+                current: payload
             }
         default: 
             return state;

@@ -1,6 +1,7 @@
 export enum OpTypes {
     getTables = 'getTables',
     getDatabases = 'getDatabases',
+    getSchemas = 'getSchemas',
     getColumns = 'getColumns',
     getConstraints = 'getConstraints'
 }

@@ -46,7 +46,7 @@ export class Operation<T> {
         })
     }
 
-    async doSaga(...args: any[]): Promise<T> {
+    private async doSaga(...args: any[]): Promise<T> {
         try {
             store.dispatch(setOpPending(this.opType));              // => operations[opType]: pending
             store.dispatch({type: this.pending});                   // for mainState

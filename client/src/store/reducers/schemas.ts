@@ -2,18 +2,15 @@ import { SchemaItem } from "../../api/type";
 import { setCurrentDatabaseAction } from "../../components/database/DatabaseList.actions";
 import { Action } from "../actions/actionUtil";
 import {
-  getSchemasActionFailed,
-  getSchemasActionRequested,
-  getSchemasActionSucceeded,
   setCurrentSchemaActionFailed,
   setCurrentSchemaActionRequested,
   setCurrentSchemaActionSucceeded,
 } from "../actions/schemas";
+import { getSchemas } from "../Operation/Operations";
 import { LoadingStatus } from "./types";
 
 export interface SchemasState {
   schemas?: SchemaItem[];
-  schemasStatus: LoadingStatus;
   // It makes more sense to show tables/columns for a specific schema
   current?: SchemaItem;
   setCurrentStatus: LoadingStatus;
@@ -21,7 +18,6 @@ export interface SchemasState {
 
 const initialState: SchemasState = {
   schemas: undefined,
-  schemasStatus: LoadingStatus.INITIAL,
   current: undefined,
   setCurrentStatus: LoadingStatus.INITIAL,
 };
@@ -49,30 +45,18 @@ const schemasReducer = (
         current: undefined,
         setCurrentStatus: LoadingStatus.FAILED,
       };
-    case getSchemasActionRequested:
+    case getSchemas.success:
+      const schemas = action.payload.items;
       return {
         ...state,
-        schemas: undefined,
-        schemasStatus: LoadingStatus.REQUESTED,
-      };
-    case getSchemasActionFailed:
-      return {
-        ...state,
-        schemas: undefined,
-        schemasStatus: LoadingStatus.FAILED,
-      };
-    case getSchemasActionSucceeded:
-      return {
-        ...state,
-        schemas: action.payload,
-        schemasStatus: LoadingStatus.SUCCEEDED,
+        schemas,
       };
     case setCurrentDatabaseAction:
       return {
         ...state,
-        schemasStatus: LoadingStatus.INITIAL,
         schemas: undefined,
         current: undefined,
+        setCurrentStatus: LoadingStatus.SUCCEEDED,
       }
     default:
       return state;

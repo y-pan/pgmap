@@ -1,24 +1,23 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getSchemasSaga, setCurrentSchemaSaga } from '../../store/actions/schemas';
-import { LoadingStatus } from '../../store/reducers/types';
-import { getCurrent, getSchemas, getSchemasStatus } from '../../store/selectors/schemas';
+import { setCurrentSchemaSaga } from '../../store/actions/schemas';
+import { getCurrent, getSchemas } from '../../store/selectors/schemas';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Link from '@material-ui/core/Link';
 import { getCurrentDatabase } from '../../store/selectors/databases';
+import { initialize } from './SchemaList.actions';
 
 const SchemaList: React.FC = () => {
   const dispatch = useDispatch();
-  const schemasStatus = useSelector(getSchemasStatus);
   const schemas = useSelector(getSchemas);
   const currentSchema = useSelector(getCurrent);
   const currentDatabase = useSelector(getCurrentDatabase);
-
+  console.log("currentdb", currentDatabase)
   useEffect(() => {
-    if (schemasStatus === LoadingStatus.INITIAL && currentDatabase) {
-      dispatch(getSchemasSaga());
-    }
-  }, [dispatch, schemasStatus, currentDatabase])
+      if (currentDatabase) {
+        dispatch(initialize());
+      }
+  }, [dispatch, currentDatabase])
 
   let listItems: JSX.Element[] = [] 
 

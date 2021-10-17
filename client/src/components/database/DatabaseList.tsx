@@ -1,11 +1,10 @@
 
 import React, {useEffect} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { setCurrentDatabase } from '../../store/actions/databases';
 import { getCurrentDatabase, getDatabases } from '../../store/selectors/databases';
 import Link from '@material-ui/core/Link';
 import { Breadcrumbs } from '@material-ui/core';
-import { initialize } from './DatabaseList.actions';
+import { initialize, setCurrentDatabase } from './DatabaseList.actions';
 
 const DatabaseList: React.FC = () => {
     const dispatch = useDispatch();

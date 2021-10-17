@@ -1,4 +1,4 @@
-import { setCurrentDatabaseAction } from "../actions/databases";
+import { setCurrentDatabaseAction } from "../../components/database/DatabaseList.actions";
 import { getDatabases } from "../Operation/Operations";
 
 export interface DatabasesState {

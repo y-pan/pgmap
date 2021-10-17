@@ -14,7 +14,7 @@ import {
   MappingStrategy,
   mapTransform,
   SMap,
-  timed,
+  // timed,
   toDistinctMap,
 } from "../../util/utils";
 import { setFocusTableSaga } from "../../store/actions/tables";
@@ -494,8 +494,7 @@ const SvgMap: React.FC<Props> = ({
       <svg
         className="schema-svg-map"
         ref={(ref) =>
-          ref &&
-          timed(draw)(
+          ref && draw( // timed(draw)
             svgWidth,
             ref,
             focusTable,

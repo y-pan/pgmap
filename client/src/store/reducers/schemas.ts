@@ -1,6 +1,6 @@
 import { SchemaItem } from "../../api/type";
+import { setCurrentDatabaseAction } from "../../components/database/DatabaseList.actions";
 import { Action } from "../actions/actionUtil";
-import { setCurrentDatabaseAction } from "../actions/databases";
 import {
   getSchemasActionFailed,
   getSchemasActionRequested,

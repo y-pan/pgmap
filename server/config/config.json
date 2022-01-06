@@ -1,4 +1,4 @@
 {
-  "clientPort": 3001,
-  "serverPort": 8001  
+  "clientPort": 2500,
+  "serverPort": 2501
 }

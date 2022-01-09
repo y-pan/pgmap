@@ -1,8 +1,17 @@
-#pgmap
+# PGMap
 
-A web application (Node.js, React.js) that queries database information,
-such as tables, columns and constraints, and visualizes table relationship.
+- A web app (Node.js, React.js) that visualizes table-relationship, for postgres database. 
+- Generate select-join query on related tables.
 
-Also generate select-join query on related tables for convenience.
+## To run the apps:
+```
+./run.sh
+```
+
+## Require 3 config files:
+1. `server/secret/secret.json`    &nbsp;&nbsp;&nbsp;See "secret.example.json" for example.
+2. `server/config/config.json`
+3. `client/src/config/config.json`
+
 
 ![](Demo.gif)

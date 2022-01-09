@@ -2,7 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fetchContraints = exports.fetchColumnsByTable = exports.fetchTables = exports.fetchSchemas = exports.fetchDatabases = exports.useDataBase = void 0;
 const pg_1 = require("pg");
-const secret = require("./secret/secret.json");
+let secret;
+try {
+    secret = require("./secret/secret.json");
+}
+catch (error) {
+    console.error("Missing `secret.json`, at location: pgmap/server/secret.json\nSee the example here: pgmap/server/secret.example.json");
+    throw error;
+}
 const isDebug = true;
 let client;
 let currentDatabase;

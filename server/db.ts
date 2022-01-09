@@ -1,5 +1,13 @@
 import { Client, QueryResult, QueryResultRow } from "pg";
-const secret = require("./secret/secret.json");
+let secret;
+
+try {
+  secret = require("./secret/secret.json");
+} catch (error) {
+  console.error("Missing `secret.json`, at location: pgmap/server/secret.json\nSee the example here: pgmap/server/secret.example.json");
+  throw error;
+}
+
 const isDebug = true;
 
 let client;
@@ -16,7 +24,7 @@ function resetPgClient(): Promise<void> {
     if (client) {
       client.end();
     }
-    client = new Client({...secret, database: "postgres"});
+    client = new Client({ ...secret, database: "postgres" });
     return client.connect();
   } catch (e) {
     log("Failed to reset pgClient");
@@ -35,8 +43,8 @@ export async function useDataBase(database: string): Promise<void> {
       if (client) {
         await client.end();
       }
-      
-      client = new Client({...secret, database});
+
+      client = new Client({ ...secret, database });
 
       await client.connect();
       currentDatabase = database;
@@ -52,8 +60,8 @@ export async function useDataBase(database: string): Promise<void> {
 export async function fetchDatabases(): Promise<FetchResult> {
   const queryStr = `SELECT datname FROM pg_database;`;
   logQuery(queryStr);
-  const {rows, rowCount} = await client.query(queryStr)
-  return {items: rows.map(row => row.datname), count: rowCount}
+  const { rows, rowCount } = await client.query(queryStr)
+  return { items: rows.map(row => row.datname), count: rowCount }
 }
 
 export async function fetchSchemas(database: string): Promise<FetchResult> {
